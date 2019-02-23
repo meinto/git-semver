@@ -8,10 +8,10 @@ What i want is small cli that handles the version of my repository, no matter wh
 
 ## Usage
 
-By default this cli uses a package.json in the root folder of a git repository to store the version. The versioning is built up on [semantic versioning](https://semver.org/).
+By default this cli uses a `semver.json` in the root folder of a git repository to store the version. The versioning is built up on [semantic versioning](https://semver.org/).
 
 ```bash
 semver version [major|minor|patch] [-p <path-to-repo>]
 ```
 
-By default `semver` lookup the `package.json` in the current directory. The programm only overrides the property `version` and leaves other properties untouched.
+By default `semver` lookup the `semver.json` in the current directory. The programm only overrides the property `version` and leaves other properties untouched.

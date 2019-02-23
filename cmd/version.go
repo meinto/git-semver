@@ -40,23 +40,23 @@ var versionCmd = &cobra.Command{
 			log.Fatalln("cannot resolve repo path: ", err)
 		}
 
-		var packageJSON map[string]interface{}
-		pathToPackageJSON := gitRepoPath + "/package.json"
-		if _, err := os.Stat(pathToPackageJSON); os.IsNotExist(err) {
-			log.Println("package.json doesn't exist. creating one...")
-			packageJSON = make(map[string]interface{})
-			packageJSON["version"] = "1.0.0"
+		var versionFileJSON map[string]interface{}
+		pathToVersionFile := gitRepoPath + "/semver.json"
+		if _, err := os.Stat(pathToVersionFile); os.IsNotExist(err) {
+			log.Println("semver.json doesn't exist. creating one...")
+			versionFileJSON = make(map[string]interface{})
+			versionFileJSON["version"] = "1.0.0"
 		} else {
-			packageJSONFile, err := os.Open(pathToPackageJSON)
+			versionFile, err := os.Open(pathToVersionFile)
 			if err != nil {
-				log.Fatalln("cannot read package.json: ", err)
+				log.Fatalln("cannot read semver.json: ", err)
 			}
-			defer packageJSONFile.Close()
+			defer versionFile.Close()
 
-			byteValue, _ := ioutil.ReadAll(packageJSONFile)
-			json.Unmarshal(byteValue, &packageJSON)
+			byteValue, _ := ioutil.ReadAll(versionFile)
+			json.Unmarshal(byteValue, &versionFileJSON)
 
-			currentVersion, ok := packageJSON["version"]
+			currentVersion, ok := versionFileJSON["version"]
 			if !ok {
 				log.Fatalln("current version not set")
 			}
@@ -65,13 +65,13 @@ var versionCmd = &cobra.Command{
 				log.Fatalln(err)
 			}
 
-			packageJSON["version"] = nextVersion
+			versionFileJSON["version"] = nextVersion
 		}
 
-		newPackageJSON, _ := json.MarshalIndent(packageJSON, "", "  ")
-		err = ioutil.WriteFile("package.json", newPackageJSON, 0644)
+		newVersionFileJSON, _ := json.MarshalIndent(versionFileJSON, "", "  ")
+		err = ioutil.WriteFile("semver.json", newVersionFileJSON, 0644)
 		if err != nil {
-			log.Fatalln("error writing package.json: ", err)
+			log.Fatalln("error writing semver.json: ", err)
 		}
 	},
 }
