@@ -14,13 +14,15 @@ import (
 )
 
 var versionCmdOptions struct {
-	RepoPath string
-	DryRun   bool
+	RepoPath    string
+	VersionFile string
+	DryRun      bool
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	versionCmd.Flags().StringVarP(&versionCmdOptions.RepoPath, "path", "p", ".", "path to git repository")
+	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFile, "outfile", "o", "semver.json", "name of version file")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
 }
 
@@ -43,15 +45,15 @@ var versionCmd = &cobra.Command{
 		}
 
 		var jsonContent map[string]interface{}
-		pathToVersionFile := gitRepoPath + "/semver.json"
+		pathToVersionFile := gitRepoPath + "/" + versionCmdOptions.VersionFile
 		if _, err := os.Stat(pathToVersionFile); os.IsNotExist(err) {
-			log.Println("semver.json doesn't exist. creating one...")
+			log.Printf("%s doesn't exist. creating one...", versionCmdOptions.VersionFile)
 			jsonContent = make(map[string]interface{})
 			jsonContent["version"] = "1.0.0"
 		} else {
 			versionFile, err := os.Open(pathToVersionFile)
 			if err != nil {
-				log.Fatalln("cannot read semver.json: ", err)
+				log.Fatalf("cannot read %s: %s", versionCmdOptions.VersionFile, err.Error())
 			}
 			defer versionFile.Close()
 
@@ -103,8 +105,8 @@ func makeVersion(currentVersion, nextVersionType string) (string, error) {
 
 func writeVersionFile(jsonContent map[string]interface{}) {
 	newJSONContent, _ := json.MarshalIndent(jsonContent, "", "  ")
-	err := ioutil.WriteFile("semver.json", newJSONContent, 0644)
+	err := ioutil.WriteFile(versionCmdOptions.VersionFile, newJSONContent, 0644)
 	if err != nil {
-		log.Fatalln("error writing semver.json: ", err)
+		log.Fatalf("error writing %s: %s", versionCmdOptions.VersionFile, err.Error())
 	}
 }

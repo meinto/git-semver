@@ -11,7 +11,7 @@ What i want is small cli that handles the version of my repository, no matter wh
 By default this cli uses a `semver.json` in the root folder of a git repository to store the version. The versioning is built up on [semantic versioning](https://semver.org/).
 
 ```bash
-semver version [major|minor|patch] [--dryrun] [-p <path-to-repo>]
+semver version [major|minor|patch] [--dryrun] [-p <path-to-repo>] [-o <name-of-version-json-file>]
 ```
 
-By default `semver` lookup the `semver.json` in the current directory. The programm only overrides the property `version` and leaves other properties untouched.
+By default `semver` lookup the `semver.json` in the current directory. If you want to store your version in a custom json file use the flag `-o`. The programm only overrides the property `version` and leaves other properties untouched.
