@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,12 +12,16 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
 var versionCmdOptions struct {
 	RepoPath    string
 	VersionFile string
 	DryRun      bool
+	CreateTag   bool
+	PushTag     bool
 }
 
 func init() {
@@ -24,6 +29,8 @@ func init() {
 	versionCmd.Flags().StringVarP(&versionCmdOptions.RepoPath, "path", "p", ".", "path to git repository")
 	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFile, "outfile", "o", "semver.json", "name of version file")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
+	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
+	versionCmd.Flags().BoolVarP(&versionCmdOptions.PushTag, "push", "P", false, "push git tag")
 }
 
 var versionCmd = &cobra.Command{
@@ -72,9 +79,23 @@ var versionCmd = &cobra.Command{
 			jsonContent["version"] = nextVersion
 		}
 
-		log.Println("new version: ", jsonContent["version"])
-		if !versionCmdOptions.DryRun {
-			writeVersionFile(jsonContent)
+		nextVersion := jsonContent["version"].(string)
+		log.Println("new version: ", nextVersion)
+		if versionCmdOptions.DryRun {
+			log.Println("dry run finished...")
+			os.Exit(1)
+		}
+
+		writeVersionFile(jsonContent)
+
+		if versionCmdOptions.CreateTag {
+			err = makeGitTag(versionCmdOptions.RepoPath, nextVersion)
+
+			if versionCmdOptions.PushTag && err == nil {
+				if err = pushGitTag(versionCmdOptions.RepoPath); err != nil {
+					log.Fatalf("cannot push tag: %s", err.Error())
+				}
+			}
 		}
 	},
 }
@@ -109,4 +130,40 @@ func writeVersionFile(jsonContent map[string]interface{}) {
 	if err != nil {
 		log.Fatalf("error writing %s: %s", versionCmdOptions.VersionFile, err.Error())
 	}
+}
+
+func makeGitTag(repoPath, version string) error {
+	r, err := git.PlainOpen(repoPath)
+	if err != nil {
+		log.Println("this is no valid git repository")
+		return err
+	} else {
+		headRef, err := r.Head()
+		if err != nil {
+			return err
+		}
+
+		tag := fmt.Sprintf("refs/tags/v%s", version)
+		ref := plumbing.NewHashReference(plumbing.ReferenceName(tag), headRef.Hash())
+
+		err = r.Storer.SetReference(ref)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func pushGitTag(repoPath string) error {
+	r, err := git.PlainOpen(repoPath)
+	if err != nil {
+		log.Println("this is no valid git repository")
+		return err
+	} else {
+		err = r.Push(&git.PushOptions{})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
