@@ -93,13 +93,14 @@ var versionCmd = &cobra.Command{
 
 		writeVersionFile(jsonContent)
 
+		var createGitTagError error
 		if versionCmdOptions.CreateTag {
-			err = makeGitTag(versionCmdOptions.RepoPath, nextVersion)
+			createGitTagError = makeGitTag(versionCmdOptions.RepoPath, nextVersion)
+		}
 
-			if versionCmdOptions.Push && err == nil {
-				if err = push(versionCmdOptions.RepoPath, versionCmdOptions.VersionFile); err != nil {
-					log.Fatalf("cannot push tag: %s", err.Error())
-				}
+		if versionCmdOptions.Push && createGitTagError == nil {
+			if err = push(versionCmdOptions.RepoPath, versionCmdOptions.VersionFile); err != nil {
+				log.Fatalf("cannot push tag: %s", err.Error())
 			}
 		}
 	},
