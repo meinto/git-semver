@@ -91,7 +91,16 @@ var versionCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		if versionCmdOptions.Push {
+			if err = checkIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
+				log.Fatal(err)
+			}
+		}
+
 		writeVersionFile(jsonContent)
+		if err = addVersionChanges(versionCmdOptions.RepoPath, versionCmdOptions.VersionFile, nextVersion); err != nil {
+			log.Fatal(err)
+		}
 
 		var createGitTagError error
 		if versionCmdOptions.CreateTag {
@@ -99,7 +108,7 @@ var versionCmd = &cobra.Command{
 		}
 
 		if versionCmdOptions.Push && createGitTagError == nil {
-			if err = push(versionCmdOptions.RepoPath, versionCmdOptions.VersionFile); err != nil {
+			if err = push(versionCmdOptions.RepoPath); err != nil {
 				log.Fatalf("cannot push tag: %s", err.Error())
 			}
 		}
@@ -160,7 +169,28 @@ func makeGitTag(repoPath, version string) error {
 	return nil
 }
 
-func push(repoPath, configFile string) error {
+func checkIfRepoIsClean(repoPath string) error {
+	r, err := git.PlainOpen(repoPath)
+	if err != nil {
+		log.Println("this is no valid git repository")
+		return err
+	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+	status, err := w.Status()
+	if err != nil {
+		return err
+	}
+	if !status.IsClean() {
+		return errors.New("please commit all files before versioning")
+	}
+	return nil
+}
+
+func addVersionChanges(repoPath, configFile, version string) error {
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
 		log.Println("this is no valid git repository")
@@ -175,7 +205,7 @@ func push(repoPath, configFile string) error {
 	if err != nil {
 		return err
 	}
-	_, err = w.Commit("example go-git commit", &git.CommitOptions{
+	_, err = w.Commit("new version: "+version, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "semver",
 			Email: "semver@no-reply.git",
@@ -183,6 +213,15 @@ func push(repoPath, configFile string) error {
 		},
 	})
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func push(repoPath string) error {
+	r, err := git.PlainOpen(repoPath)
+	if err != nil {
+		log.Println("this is no valid git repository")
 		return err
 	}
 
