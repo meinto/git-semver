@@ -25,7 +25,7 @@ By default `semver` lookup the `semver.json` in the current directory. If you wa
 
 ### Create git tag
 
-With the flag `-t` `semver` will create a git tag of the new version e.g.: `v1.0.0`.
+With the flag `-t`, `semver` will create a git tag of the new version e.g.: `v1.0.0`.
 
 ### Push version changes
 
