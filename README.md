@@ -1,4 +1,4 @@
-# git-semver: A tool for versioning your git repository
+# git-semver: A cli for versioning your git repository
 
 ## Why
 
