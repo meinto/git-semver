@@ -7,13 +7,18 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
 var versionCmdOptions struct {
@@ -21,7 +26,7 @@ var versionCmdOptions struct {
 	VersionFile string
 	DryRun      bool
 	CreateTag   bool
-	PushTag     bool
+	Push        bool
 }
 
 func init() {
@@ -30,7 +35,7 @@ func init() {
 	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFile, "outfile", "o", "semver.json", "name of version file")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
-	versionCmd.Flags().BoolVarP(&versionCmdOptions.PushTag, "push", "P", false, "push git tag")
+	versionCmd.Flags().BoolVarP(&versionCmdOptions.Push, "push", "P", false, "push git tags and version changes")
 }
 
 var versionCmd = &cobra.Command{
@@ -91,8 +96,8 @@ var versionCmd = &cobra.Command{
 		if versionCmdOptions.CreateTag {
 			err = makeGitTag(versionCmdOptions.RepoPath, nextVersion)
 
-			if versionCmdOptions.PushTag && err == nil {
-				if err = pushGitTag(versionCmdOptions.RepoPath); err != nil {
+			if versionCmdOptions.Push && err == nil {
+				if err = push(versionCmdOptions.RepoPath, versionCmdOptions.VersionFile); err != nil {
 					log.Fatalf("cannot push tag: %s", err.Error())
 				}
 			}
@@ -154,16 +159,50 @@ func makeGitTag(repoPath, version string) error {
 	return nil
 }
 
-func pushGitTag(repoPath string) error {
+func push(repoPath, configFile string) error {
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
 		log.Println("this is no valid git repository")
 		return err
-	} else {
-		err = r.Push(&git.PushOptions{})
-		if err != nil {
-			return err
-		}
+	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		return err
+	}
+	_, err = w.Add(configFile)
+	if err != nil {
+		return err
+	}
+	_, err = w.Commit("example go-git commit", &git.CommitOptions{
+		Author: &object.Signature{
+			Name:  "semver",
+			Email: "semver@no-reply.git",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	currentUser, err := user.Current()
+	if err != nil {
+		return err
+	}
+
+	sshAuth, err := ssh.NewPublicKeysFromFile("git", currentUser.HomeDir+"/.ssh/id_rsa", "")
+	if err != nil {
+		return err
+	}
+
+	tags := config.RefSpec("refs/tags/*:refs/tags/*")
+	heads := config.RefSpec("refs/heads/*:refs/heads/*")
+	err = r.Push(&git.PushOptions{
+		Auth:     sshAuth,
+		RefSpecs: []config.RefSpec{tags, heads},
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }
