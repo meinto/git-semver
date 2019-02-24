@@ -27,11 +27,15 @@ var versionCmdOptions struct {
 	DryRun      bool
 	CreateTag   bool
 	Push        bool
+	Author      string
+	Email       string
 }
 
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	versionCmd.Flags().StringVarP(&versionCmdOptions.RepoPath, "path", "p", ".", "path to git repository")
+	versionCmd.Flags().StringVarP(&versionCmdOptions.Author, "author", "a", "semver", "name of the author")
+	versionCmd.Flags().StringVarP(&versionCmdOptions.Email, "email", "e", "semver@no-reply.git", "email of the author")
 	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFile, "outfile", "o", "semver.json", "name of version file")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
@@ -207,8 +211,8 @@ func addVersionChanges(repoPath, configFile, version string) error {
 	}
 	_, err = w.Commit("new version: "+version, &git.CommitOptions{
 		Author: &object.Signature{
-			Name:  "semver",
-			Email: "semver@no-reply.git",
+			Name:  versionCmdOptions.Author,
+			Email: versionCmdOptions.Email,
 			When:  time.Now(),
 		},
 	})
