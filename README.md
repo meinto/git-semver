@@ -6,6 +6,26 @@ There is no standardized way to version a git repository. Node applications stor
 
 What i want is small cli that handles the version of my repository, no matter what technoligy is under the hood.
 
+## Installation
+
+Download the corresponding [latest binary](https://github.com/meinto/git-semver/releases) and run the `init` command. The `init` command is only valid for mac and linux yet.
+
+```bash
+<name-of-binary> init
+
+# answer the questions
+Name of binary: <name-of-binary>
+How do you want to use semver?
+  > global
+  > git plugin
+```
+
+If you decide to use `semver` as git-plugin, you can call it after initialization like that:
+
+```bash
+git semver version ...
+```
+
 ## Usage
 
 By default this cli uses a `semver.json` in the root folder of a git repository to store the version. The versioning is built up on [semantic versioning](https://semver.org/).
@@ -18,7 +38,7 @@ semver version [major|minor|patch] \
   [--tag] \                           # default: false -- tag the commit with the new version
   [--push] \                          # default: false -- push all changes made by semver
   [-a <name-of-author>] \             # default: semver -- (only relevant when --push is set)
-  [-e <email-of-author]               # default: semver@no-reply.git -- (only relevant when --push is set)
+  [-e <email-of-author]            # default: semver@no-reply.git -- (only relevant when --push is set)
 ```
 
 ### Custom version file
