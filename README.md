@@ -54,3 +54,7 @@ With the flag `-t`, `semver` will create a git tag of the new version e.g.: `v1.
 `semver` writes the new version back into the config file. As described, you can also tag the commit using the flag `-t`. To automatically push these changes made by `semver`, use the flag `-P`.
 
 The default author of the commit would be "semver" and the email "semver@no-reply.git". To change this, provide the flags `-a` (auhtor) and `-e` (email).
+
+## Contribute
+
+Create a fork, make your changes, and send a pull request. :sunglasses:
