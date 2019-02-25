@@ -38,7 +38,8 @@ semver version [major|minor|patch] \
   [--tag] \                           # default: false -- tag the commit with the new version
   [--push] \                          # default: false -- push all changes made by semver
   [-a <name-of-author>] \             # default: semver -- (only relevant when --push is set)
-  [-e <email-of-author]            # default: semver@no-reply.git -- (only relevant when --push is set)
+  [-e <email-of-author]               # default: semver@no-reply.git -- (only relevant when --push is set)
+  [-sshFilePath <path-to-ssh-file>]   # default: ~/.ssh/id_rsa
 ```
 
 ### Custom version file
@@ -54,6 +55,8 @@ With the flag `-t`, `semver` will create a git tag of the new version e.g.: `v1.
 `semver` writes the new version back into the config file. As described, you can also tag the commit using the flag `-t`. To automatically push these changes made by `semver`, use the flag `-P`.
 
 The default author of the commit would be "semver" and the email "semver@no-reply.git". To change this, provide the flags `-a` (auhtor) and `-e` (email).
+
+Right now the pushing feature is only available for repositories managed via ssh. With `--sshFilePath` you can change the default path (`~/.ssh/id_rsa`) to your ssh file.
 
 ## Contribute
 

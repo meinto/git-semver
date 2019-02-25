@@ -29,6 +29,7 @@ var versionCmdOptions struct {
 	Push        bool
 	Author      string
 	Email       string
+	SSHFilePath string
 }
 
 func init() {
@@ -40,6 +41,16 @@ func init() {
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.Push, "push", "P", false, "push git tags and version changes")
+
+	currentUser, err := user.Current()
+	var defaultSSHFilePath string
+	if err != nil {
+		log.Println("cannot set default ssh file path")
+		defaultSSHFilePath = ""
+	} else {
+		defaultSSHFilePath = currentUser.HomeDir + "/.ssh/id_rsa"
+	}
+	versionCmd.Flags().StringVar(&versionCmdOptions.SSHFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
 }
 
 var versionCmd = &cobra.Command{
@@ -223,18 +234,17 @@ func addVersionChanges(repoPath, configFile, version string) error {
 }
 
 func push(repoPath string) error {
+	if versionCmdOptions.SSHFilePath == "" {
+		return errors.New("path to ssh file not set")
+	}
+
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
 		log.Println("this is no valid git repository")
 		return err
 	}
 
-	currentUser, err := user.Current()
-	if err != nil {
-		return err
-	}
-
-	sshAuth, err := ssh.NewPublicKeysFromFile("git", currentUser.HomeDir+"/.ssh/id_rsa", "")
+	sshAuth, err := ssh.NewPublicKeysFromFile("git", versionCmdOptions.SSHFilePath, "")
 	if err != nil {
 		return err
 	}
