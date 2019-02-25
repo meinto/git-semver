@@ -1,14 +1,14 @@
-# git-semver: A cli for versioning your git repository
+# git-semver: A cli tool for versioning your git repository
 
 ## Why
 
 There is no standardized way to version a git repository. Node applications store their version in a package.json, other appications store it in a Makefile or somewhere else.
 
-What i want is small cli that handles the version of my repository, no matter what technoligy is under the hood.
+What i want is small cli tool that handles the version of my repository, no matter what technology is under the hood.
 
 ## Installation
 
-Download the corresponding [latest binary](https://github.com/meinto/git-semver/releases) and run the `init` command. The `init` command is only valid for mac and linux yet.
+Download the corresponding [latest binary](https://github.com/meinto/git-semver/releases) and run the `init` command. Right now the `init` command is only valid for mac and linux.
 
 ```bash
 <name-of-binary> init
@@ -20,7 +20,7 @@ How do you want to use semver?
   > git plugin
 ```
 
-If you decide to use `semver` as git-plugin, you can call it after initialization like that:
+You can use `semver` as a gitplugin by using the following syntax:
 
 ```bash
 git semver version ...
@@ -28,7 +28,7 @@ git semver version ...
 
 ## Usage
 
-By default this cli uses a `semver.json` in the root folder of a git repository to store the version. The versioning is built up on [semantic versioning](https://semver.org/).
+By default this cli tool uses a `semver.json` in the root folder of a git repository to store the version. The versioning is built up on [semantic versioning](https://semver.org/).
 
 ```bash
 semver version [major|minor|patch] \
@@ -43,7 +43,7 @@ semver version [major|minor|patch] \
 
 ### Custom version file
 
-By default `semver` lookup the `semver.json` in the current directory. If you want to store your version in a custom json file use the flag `-o`. The cli only overrides the property `version` and leaves other properties untouched.
+By default `semver` lookup the `semver.json` in the current directory. If you want to store your version in a custom json file use the flag `-o`. The cli tool only overrides the property `version` and leaves other properties untouched.
 
 ### Create git tag
 
@@ -51,6 +51,6 @@ With the flag `-t`, `semver` will create a git tag of the new version e.g.: `v1.
 
 ### Push version changes
 
-`semver` writes the new version back into the config file. Like described it also can tag the commit using the flag `-t`. To automatically push these changes made by `semver` use the flag `-P`.
+`semver` writes the new version back into the config file. As described, you can also tag the commit using the flag `-t`. To automatically push these changes made by `semver`, use the flag `-P`.
 
-The default author of the commit would be "semver" and the email "semver@no-reply.git". If you want to change this, provide the flags `-a` (auhtor) and `-e` (email).
+The default author of the commit would be "semver" and the email "semver@no-reply.git". To change this, provide the flags `-a` (auhtor) and `-e` (email).
