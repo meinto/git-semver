@@ -110,6 +110,9 @@ var versionCmd = &cobra.Command{
 			if err = checkIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
 				log.Fatal(err)
 			}
+			if err = checkIfSSHFileExists(versionCmdOptions.SSHFilePath); err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		writeVersionFile(jsonContent)
@@ -234,10 +237,6 @@ func addVersionChanges(repoPath, configFile, version string) error {
 }
 
 func push(repoPath string) error {
-	if versionCmdOptions.SSHFilePath == "" {
-		return errors.New("path to ssh file not set")
-	}
-
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
 		log.Println("this is no valid git repository")
@@ -257,6 +256,13 @@ func push(repoPath string) error {
 	})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func checkIfSSHFileExists(sshFilePath string) error {
+	if _, err := os.Stat(sshFilePath); os.IsNotExist(err) {
+		return fmt.Errorf("ssh file not found: %s", err.Error())
 	}
 	return nil
 }
