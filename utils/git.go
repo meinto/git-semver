@@ -3,7 +3,6 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"gopkg.in/src-d/go-git.v4"
@@ -13,11 +12,11 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
+// CheckIfRepoIsClean checks for uncomitted files
 func CheckIfRepoIsClean(repoPath string) error {
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
-		log.Println("this is no valid git repository")
-		return err
+		return noValidGitRepo(err)
 	}
 
 	w, err := r.Worktree()
@@ -34,33 +33,35 @@ func CheckIfRepoIsClean(repoPath string) error {
 	return nil
 }
 
+// MakeGitTag tags the repository with given version number
+// format of git tag: "v<version-number>"
 func MakeGitTag(repoPath, version string) error {
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
-		log.Println("this is no valid git repository")
+		return noValidGitRepo(err)
+	}
+
+	headRef, err := r.Head()
+	if err != nil {
 		return err
-	} else {
-		headRef, err := r.Head()
-		if err != nil {
-			return err
-		}
+	}
 
-		tag := fmt.Sprintf("refs/tags/v%s", version)
-		ref := plumbing.NewHashReference(plumbing.ReferenceName(tag), headRef.Hash())
+	tag := fmt.Sprintf("refs/tags/v%s", version)
+	ref := plumbing.NewHashReference(plumbing.ReferenceName(tag), headRef.Hash())
 
-		err = r.Storer.SetReference(ref)
-		if err != nil {
-			return err
-		}
+	err = r.Storer.SetReference(ref)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
+// Push pushes all changes made by semver to defined bare repository
+// The push includes file changes as well as git tags
 func Push(repoPath, sshFilePath string) error {
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
-		log.Println("this is no valid git repository")
-		return err
+		return noValidGitRepo(err)
 	}
 
 	sshAuth, err := ssh.NewPublicKeysFromFile("git", sshFilePath, "")
@@ -80,11 +81,11 @@ func Push(repoPath, sshFilePath string) error {
 	return nil
 }
 
+// AddVersionChanges adds all changes made by semver during the versioning process
 func AddVersionChanges(repoPath, configFile, version, author, email string) error {
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
-		log.Println("this is no valid git repository")
-		return err
+		return noValidGitRepo(err)
 	}
 
 	w, err := r.Worktree()
