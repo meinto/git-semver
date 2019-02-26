@@ -2,23 +2,14 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 
+	semverUtil "github.com/meinto/git-semver/util"
 	"github.com/spf13/cobra"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/config"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 )
 
 var versionCmdOptions struct {
@@ -91,7 +82,7 @@ var versionCmd = &cobra.Command{
 			if !ok {
 				log.Fatalln("current version not set")
 			}
-			nextVersion, err := makeVersion(currentVersion.(string), nextVersionType)
+			nextVersion, err := semverUtil.NextVersion(currentVersion.(string), nextVersionType)
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -107,162 +98,37 @@ var versionCmd = &cobra.Command{
 		}
 
 		if versionCmdOptions.Push {
-			if err = checkIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
+			if err = semverUtil.CheckIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
 				log.Fatal(err)
 			}
-			if err = checkIfSSHFileExists(versionCmdOptions.SSHFilePath); err != nil {
+			if err = semverUtil.CheckIfSSHFileExists(versionCmdOptions.SSHFilePath); err != nil {
 				log.Fatal(err)
 			}
 		}
 
-		writeVersionFile(jsonContent)
-		if err = addVersionChanges(versionCmdOptions.RepoPath, versionCmdOptions.VersionFile, nextVersion); err != nil {
+		err = semverUtil.WriteVersionJSONFile(jsonContent, versionCmdOptions.VersionFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err = semverUtil.AddVersionChanges(
+			versionCmdOptions.RepoPath,
+			versionCmdOptions.VersionFile,
+			nextVersion,
+			versionCmdOptions.Author,
+			versionCmdOptions.Email,
+		); err != nil {
 			log.Fatal(err)
 		}
 
 		var createGitTagError error
 		if versionCmdOptions.CreateTag {
-			createGitTagError = makeGitTag(versionCmdOptions.RepoPath, nextVersion)
+			createGitTagError = semverUtil.MakeGitTag(versionCmdOptions.RepoPath, nextVersion)
 		}
 
 		if versionCmdOptions.Push && createGitTagError == nil {
-			if err = push(versionCmdOptions.RepoPath); err != nil {
+			if err = semverUtil.Push(versionCmdOptions.RepoPath, versionCmdOptions.SSHFilePath); err != nil {
 				log.Fatalf("cannot push tag: %s", err.Error())
 			}
 		}
 	},
-}
-
-func makeVersion(currentVersion, nextVersionType string) (string, error) {
-	numbers := strings.Split(currentVersion, ".")
-	if len(numbers) != 3 {
-		return "", errors.New("please provide version number in the following format: <major>.<minor>.<patch>")
-	}
-
-	switch nextVersionType {
-	case "major":
-		major, _ := strconv.Atoi(numbers[0])
-		numbers[0] = strconv.Itoa(major + 1)
-		numbers[1] = "0"
-		numbers[2] = "0"
-	case "minor":
-		minor, _ := strconv.Atoi(numbers[1])
-		numbers[1] = strconv.Itoa(minor + 1)
-		numbers[2] = "0"
-	case "patch":
-		patch, _ := strconv.Atoi(numbers[2])
-		numbers[2] = strconv.Itoa(patch + 1)
-	}
-
-	return strings.Join(numbers, "."), nil
-}
-
-func writeVersionFile(jsonContent map[string]interface{}) {
-	newJSONContent, _ := json.MarshalIndent(jsonContent, "", "  ")
-	err := ioutil.WriteFile(versionCmdOptions.VersionFile, newJSONContent, 0644)
-	if err != nil {
-		log.Fatalf("error writing %s: %s", versionCmdOptions.VersionFile, err.Error())
-	}
-}
-
-func makeGitTag(repoPath, version string) error {
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		log.Println("this is no valid git repository")
-		return err
-	} else {
-		headRef, err := r.Head()
-		if err != nil {
-			return err
-		}
-
-		tag := fmt.Sprintf("refs/tags/v%s", version)
-		ref := plumbing.NewHashReference(plumbing.ReferenceName(tag), headRef.Hash())
-
-		err = r.Storer.SetReference(ref)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func checkIfRepoIsClean(repoPath string) error {
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		log.Println("this is no valid git repository")
-		return err
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		return err
-	}
-	status, err := w.Status()
-	if err != nil {
-		return err
-	}
-	if !status.IsClean() {
-		return errors.New("please commit all files before versioning")
-	}
-	return nil
-}
-
-func addVersionChanges(repoPath, configFile, version string) error {
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		log.Println("this is no valid git repository")
-		return err
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		return err
-	}
-	_, err = w.Add(configFile)
-	if err != nil {
-		return err
-	}
-	_, err = w.Commit("new version: "+version, &git.CommitOptions{
-		Author: &object.Signature{
-			Name:  versionCmdOptions.Author,
-			Email: versionCmdOptions.Email,
-			When:  time.Now(),
-		},
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func push(repoPath string) error {
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		log.Println("this is no valid git repository")
-		return err
-	}
-
-	sshAuth, err := ssh.NewPublicKeysFromFile("git", versionCmdOptions.SSHFilePath, "")
-	if err != nil {
-		return err
-	}
-
-	tags := config.RefSpec("refs/tags/*:refs/tags/*")
-	heads := config.RefSpec("refs/heads/*:refs/heads/*")
-	err = r.Push(&git.PushOptions{
-		Auth:     sshAuth,
-		RefSpecs: []config.RefSpec{tags, heads},
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func checkIfSSHFileExists(sshFilePath string) error {
-	if _, err := os.Stat(sshFilePath); os.IsNotExist(err) {
-		return fmt.Errorf("ssh file not found: %s", err.Error())
-	}
-	return nil
 }
