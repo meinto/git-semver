@@ -12,14 +12,15 @@ import (
 )
 
 var versionCmdOptions struct {
-	RepoPath    string
-	VersionFile string
-	DryRun      bool
-	CreateTag   bool
-	Push        bool
-	Author      string
-	Email       string
-	SSHFilePath string
+	RepoPath          string
+	VersionFile       string
+	VersionFileFormat string
+	DryRun            bool
+	CreateTag         bool
+	Push              bool
+	Author            string
+	Email             string
+	SSHFilePath       string
 }
 
 func init() {
@@ -28,6 +29,7 @@ func init() {
 	versionCmd.Flags().StringVarP(&versionCmdOptions.Author, "author", "a", "semver", "name of the author")
 	versionCmd.Flags().StringVarP(&versionCmdOptions.Email, "email", "e", "semver@no-reply.git", "email of the author")
 	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFile, "outfile", "o", "semver.json", "name of version file")
+	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFileFormat, "outfileFormat", "f", "json", "format of outfile (json, raw)")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.Push, "push", "P", false, "push git tags and version changes")
@@ -57,7 +59,7 @@ var versionCmd = &cobra.Command{
 			log.Fatalln("cannot resolve repo path: ", err)
 		}
 
-		var jsonContent map[string]interface{}
+		var jsonContent = make(map[string]interface{})
 		pathToVersionFile := gitRepoPath + "/" + versionCmdOptions.VersionFile
 		if _, err := os.Stat(pathToVersionFile); os.IsNotExist(err) {
 			log.Printf("%s doesn't exist. creating one...", versionCmdOptions.VersionFile)
@@ -71,7 +73,13 @@ var versionCmd = &cobra.Command{
 			defer versionFile.Close()
 
 			byteValue, _ := ioutil.ReadAll(versionFile)
-			json.Unmarshal(byteValue, &jsonContent)
+
+			switch versionCmdOptions.VersionFileFormat {
+			case "json":
+				json.Unmarshal(byteValue, &jsonContent)
+			case "raw":
+				jsonContent["version"] = string(byteValue)
+			}
 
 			currentVersion, ok := jsonContent["version"]
 			if !ok {
@@ -101,7 +109,12 @@ var versionCmd = &cobra.Command{
 			}
 		}
 
-		err = semverUtil.WriteVersionJSONFile(jsonContent, versionCmdOptions.VersionFile)
+		switch versionCmdOptions.VersionFileFormat {
+		case "json":
+			err = semverUtil.WriteJSONVersionFile(jsonContent, versionCmdOptions.VersionFile)
+		case "raw":
+			err = semverUtil.WriteRAWVersionFile(jsonContent["version"].(string), versionCmdOptions.VersionFile)
+		}
 		if err != nil {
 			log.Fatal(err)
 		}

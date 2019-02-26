@@ -8,10 +8,19 @@ import (
 	"os/user"
 )
 
-// WriteVersionJSONFile writes given jsonContent back to json file
-func WriteVersionJSONFile(jsonContent map[string]interface{}, versionFile string) error {
+// WriteJSONVersionFile writes given jsonContent back to json file
+func WriteJSONVersionFile(jsonContent map[string]interface{}, versionFile string) error {
 	newJSONContent, _ := json.MarshalIndent(jsonContent, "", "  ")
 	err := ioutil.WriteFile(versionFile, newJSONContent, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing %s: %s", versionFile, err.Error())
+	}
+	return nil
+}
+
+// WriteRAWVersionFile writes given jsonContent back to json file
+func WriteRAWVersionFile(version, versionFile string) error {
+	err := ioutil.WriteFile(versionFile, []byte(version), 0644)
 	if err != nil {
 		return fmt.Errorf("error writing %s: %s", versionFile, err.Error())
 	}
