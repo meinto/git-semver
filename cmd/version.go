@@ -2,17 +2,13 @@ package cmd
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strconv"
-	"strings"
 
-	"github.com/meinto/git-semver/utils"
+	semverUtil "github.com/meinto/git-semver/util"
 	"github.com/spf13/cobra"
 )
 
@@ -86,7 +82,7 @@ var versionCmd = &cobra.Command{
 			if !ok {
 				log.Fatalln("current version not set")
 			}
-			nextVersion, err := makeVersion(currentVersion.(string), nextVersionType)
+			nextVersion, err := semverUtil.NextVersion(currentVersion.(string), nextVersionType)
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -102,16 +98,19 @@ var versionCmd = &cobra.Command{
 		}
 
 		if versionCmdOptions.Push {
-			if err = utils.CheckIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
+			if err = semverUtil.CheckIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
 				log.Fatal(err)
 			}
-			if err = checkIfSSHFileExists(versionCmdOptions.SSHFilePath); err != nil {
+			if err = semverUtil.CheckIfSSHFileExists(versionCmdOptions.SSHFilePath); err != nil {
 				log.Fatal(err)
 			}
 		}
 
-		writeVersionFile(jsonContent)
-		if err = utils.AddVersionChanges(
+		err = semverUtil.WriteVersionJSONFile(jsonContent, versionCmdOptions.VersionFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err = semverUtil.AddVersionChanges(
 			versionCmdOptions.RepoPath,
 			versionCmdOptions.VersionFile,
 			nextVersion,
@@ -123,52 +122,13 @@ var versionCmd = &cobra.Command{
 
 		var createGitTagError error
 		if versionCmdOptions.CreateTag {
-			createGitTagError = utils.MakeGitTag(versionCmdOptions.RepoPath, nextVersion)
+			createGitTagError = semverUtil.MakeGitTag(versionCmdOptions.RepoPath, nextVersion)
 		}
 
 		if versionCmdOptions.Push && createGitTagError == nil {
-			if err = utils.Push(versionCmdOptions.RepoPath, versionCmdOptions.SSHFilePath); err != nil {
+			if err = semverUtil.Push(versionCmdOptions.RepoPath, versionCmdOptions.SSHFilePath); err != nil {
 				log.Fatalf("cannot push tag: %s", err.Error())
 			}
 		}
 	},
-}
-
-func makeVersion(currentVersion, nextVersionType string) (string, error) {
-	numbers := strings.Split(currentVersion, ".")
-	if len(numbers) != 3 {
-		return "", errors.New("please provide version number in the following format: <major>.<minor>.<patch>")
-	}
-
-	switch nextVersionType {
-	case "major":
-		major, _ := strconv.Atoi(numbers[0])
-		numbers[0] = strconv.Itoa(major + 1)
-		numbers[1] = "0"
-		numbers[2] = "0"
-	case "minor":
-		minor, _ := strconv.Atoi(numbers[1])
-		numbers[1] = strconv.Itoa(minor + 1)
-		numbers[2] = "0"
-	case "patch":
-		patch, _ := strconv.Atoi(numbers[2])
-		numbers[2] = strconv.Itoa(patch + 1)
-	}
-
-	return strings.Join(numbers, "."), nil
-}
-
-func writeVersionFile(jsonContent map[string]interface{}) {
-	newJSONContent, _ := json.MarshalIndent(jsonContent, "", "  ")
-	err := ioutil.WriteFile(versionCmdOptions.VersionFile, newJSONContent, 0644)
-	if err != nil {
-		log.Fatalf("error writing %s: %s", versionCmdOptions.VersionFile, err.Error())
-	}
-}
-
-func checkIfSSHFileExists(sshFilePath string) error {
-	if _, err := os.Stat(sshFilePath); os.IsNotExist(err) {
-		return fmt.Errorf("ssh file not found: %s", err.Error())
-	}
-	return nil
 }
