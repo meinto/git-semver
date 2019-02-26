@@ -11,7 +11,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-func setup(t *testing.T) (*git.Repository, string, func()) {
+func setupTestRepo(t *testing.T) (*git.Repository, string, func()) {
 	t.Log("init tmp git repo")
 
 	tmpFolder := "/tmp/github.com/meinto/semver/"
@@ -34,7 +34,7 @@ func TestCheckIfRepoIsClean(t *testing.T) {
 		t.Error("should throw error because the repo is not initialized")
 	}
 
-	repo, repoPath, teardown := setup(t)
+	repo, repoPath, teardown := setupTestRepo(t)
 	defer teardown()
 
 	filename := filepath.Join(repoPath, "example-git-file")
