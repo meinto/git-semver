@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
 
 	semverUtil "github.com/meinto/git-semver/util"
@@ -33,13 +32,9 @@ func init() {
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.Push, "push", "P", false, "push git tags and version changes")
 
-	currentUser, err := user.Current()
-	var defaultSSHFilePath string
+	defaultSSHFilePath, err := semverUtil.GetDefaultSSHFilePath()
 	if err != nil {
-		log.Println("cannot set default ssh file path")
-		defaultSSHFilePath = ""
-	} else {
-		defaultSSHFilePath = currentUser.HomeDir + "/.ssh/id_rsa"
+		log.Println(err)
 	}
 	versionCmd.Flags().StringVar(&versionCmdOptions.SSHFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
 }

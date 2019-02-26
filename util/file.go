@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/user"
 )
 
 // WriteVersionJSONFile writes given jsonContent back to json file
@@ -23,4 +24,15 @@ func CheckIfSSHFileExists(sshFilePath string) error {
 		return fmt.Errorf("ssh file not found: %s", err.Error())
 	}
 	return nil
+}
+
+// GetDefaultSSHFilePath returns the absolute path to ~/.ssh/id_rsa
+func GetDefaultSSHFilePath() (string, error) {
+	currentUser, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+
+	defaultSSHFilePath := currentUser.HomeDir + "/.ssh/id_rsa"
+	return defaultSSHFilePath, nil
 }
