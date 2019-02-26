@@ -1,14 +1,27 @@
 version: 2
+
 jobs:
-  build:
+  build-and-push:
     docker:
       - image: circleci/golang:1.11
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/meinto/glow
+    filters:
+      tags:
+        only: /^v.*$/
     steps:
       - checkout
       - run: go get -u github.com/tcnksm/ghr
       - run: go get ./...
       - run: ./.circleci/build.sh
       - run: ghr -t $GITHUB_TOKEN v$(cat semver.json | grep -o '"[0-9.]*"' | rev | cut -c2- | rev | cut -c2-) build
+
+workflows:
+  version: 2
+  build-and-push:
+    jobs:
+      - build-and-push:
+          filters:
+            tags:
+              only: /^v.*$/
