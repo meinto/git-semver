@@ -47,6 +47,12 @@ semver version [major|minor|patch] \
 
 By default `semver` lookup the `semver.json` in the current directory. If you want to store your version in a custom json file use the flag `-o`. The cli tool only overrides the property `version` and leaves other properties untouched.
 
+If you prefer a raw `VERSION` file which contains only the version number, you can do this by using the flags `-o` in combination with `-f`:
+
+```bash
+semver version minor -o VERSION -f raw
+```
+
 ### Create git tag
 
 With the flag `-t`, `semver` will create a git tag of the new version e.g.: `v1.0.0`.
