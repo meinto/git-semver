@@ -7,11 +7,6 @@ jobs:
         environment:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/meinto/glow
-    filters:
-      branches:
-        ignore: /.*/
-      tags:
-        only: /^v.*$/
     steps:
       - checkout
       - run: go get -u github.com/tcnksm/ghr
@@ -25,5 +20,7 @@ workflows:
     jobs:
       - build-and-push:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*$/
