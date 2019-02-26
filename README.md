@@ -34,7 +34,8 @@ By default this cli tool uses a `semver.json` in the root folder of a git reposi
 semver version [major|minor|patch] \
   [--dryrun] \                        # default: false -- only show how version would change
   [-p <path-to-repo>] \               # default: .
-  [-o <name-of-version-json-file>] \  # default: semver.json -- define alternative version json file
+  [-o <name-of-version-file>] \       # default: semver.json -- define alternative version json file
+  [-f <version-file-type>] \          # default: json -- you set the values "json" or "raw"
   [--tag] \                           # default: false -- tag the commit with the new version
   [--push] \                          # default: false -- push all changes made by semver
   [-a <name-of-author>] \             # default: semver -- (only relevant when --push is set)
