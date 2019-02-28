@@ -7,14 +7,15 @@ import (
 	"path/filepath"
 
 	"github.com/manifoldco/promptui"
+	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(installCmd)
 }
 
-var initCmd = &cobra.Command{
+var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "install semver",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -24,7 +25,7 @@ var initCmd = &cobra.Command{
 			log.Fatalf("file listing failed: %s", err.Error())
 		}
 
-		index, err := promptSelect(
+		index, _, err := cmdUtil.PromptSelect(
 			"Select your downloaded semver file",
 			flist,
 		)
@@ -36,7 +37,7 @@ var initCmd = &cobra.Command{
 			log.Fatalf("error getting path to semver file: %s", err)
 		}
 
-		index, err = promptSelect(
+		index, _, err = cmdUtil.PromptSelect(
 			"How do you want to use semver",
 			[]string{"global", "git plugin"},
 		)
@@ -69,20 +70,6 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("successfully moved semver")
 	},
-}
-
-func promptSelect(label string, options []string) (int, error) {
-	prompt := promptui.Select{
-		Label: label,
-		Items: options,
-	}
-
-	index, _, err := prompt.Run()
-	if err != nil {
-		return -1, err
-	}
-
-	return index, nil
 }
 
 func replaceFile(filePath string) (bool, error) {

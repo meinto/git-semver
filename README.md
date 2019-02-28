@@ -46,6 +46,8 @@ semver version [major|minor|patch] \
   [-sshFilePath <path-to-ssh-file>]   # default: ~/.ssh/id_rsa
 ```
 
+You can create an individual `semver.config.json` file in the root of your project to override the default values of the flags. Simply run `semver init` command and follow the instructions.
+
 ### Custom version file
 
 By default `semver` lookup the `semver.json` in the current directory. If you want to store your version in a custom json file use the flag `-o`. The cli tool only overrides the property `version` and leaves other properties untouched.
