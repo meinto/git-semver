@@ -9,10 +9,11 @@ import (
 
 func main() {
 	viper.SetConfigName("semver.config")
+	viper.SetConfigType("json")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Println("there is no semver.config file")
+		log.Println("there is no semver.config file: ", err)
 	}
 
 	cmd.Execute()

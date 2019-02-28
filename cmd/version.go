@@ -9,6 +9,7 @@ import (
 
 	semverUtil "github.com/meinto/git-semver/util"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var versionCmdOptions struct {
@@ -33,6 +34,13 @@ func init() {
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
 	versionCmd.Flags().BoolVarP(&versionCmdOptions.Push, "push", "P", false, "push git tags and version changes")
+
+	viper.BindPFlag("versionFileName", versionCmd.Flags().Lookup("outfile"))
+	viper.BindPFlag("versionFileType", versionCmd.Flags().Lookup("outfileFormat"))
+	viper.BindPFlag("tagVersions", versionCmd.Flags().Lookup("tag"))
+	viper.BindPFlag("pushChanges", versionCmd.Flags().Lookup("push"))
+	viper.BindPFlag("author", versionCmd.Flags().Lookup("author"))
+	viper.BindPFlag("email", versionCmd.Flags().Lookup("email"))
 
 	defaultSSHFilePath, err := semverUtil.GetDefaultSSHFilePath()
 	if err != nil {
@@ -60,21 +68,21 @@ var versionCmd = &cobra.Command{
 		}
 
 		var jsonContent = make(map[string]interface{})
-		pathToVersionFile := gitRepoPath + "/" + versionCmdOptions.VersionFile
+		pathToVersionFile := gitRepoPath + "/" + viper.GetString("versionFileName")
 		if _, err := os.Stat(pathToVersionFile); os.IsNotExist(err) {
-			log.Printf("%s doesn't exist. creating one...", versionCmdOptions.VersionFile)
+			log.Printf("%s doesn't exist. creating one...", viper.GetString("versionFileName"))
 			jsonContent = make(map[string]interface{})
 			jsonContent["version"] = "1.0.0"
 		} else {
 			versionFile, err := os.Open(pathToVersionFile)
 			if err != nil {
-				log.Fatalf("cannot read %s: %s", versionCmdOptions.VersionFile, err.Error())
+				log.Fatalf("cannot read %s: %s", viper.GetString("versionFileName"), err.Error())
 			}
 			defer versionFile.Close()
 
 			byteValue, _ := ioutil.ReadAll(versionFile)
 
-			switch versionCmdOptions.VersionFileFormat {
+			switch viper.GetString("versionFileType") {
 			case "json":
 				json.Unmarshal(byteValue, &jsonContent)
 			case "raw":
@@ -100,7 +108,7 @@ var versionCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if versionCmdOptions.Push {
+		if viper.GetBool("pushChanges") {
 			if err = semverUtil.CheckIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
 				log.Fatal(err)
 			}
@@ -109,31 +117,31 @@ var versionCmd = &cobra.Command{
 			}
 		}
 
-		switch versionCmdOptions.VersionFileFormat {
+		switch viper.GetString("versionFileType") {
 		case "json":
-			err = semverUtil.WriteJSONVersionFile(jsonContent, versionCmdOptions.VersionFile)
+			err = semverUtil.WriteJSONVersionFile(jsonContent, viper.GetString("versionFileName"))
 		case "raw":
-			err = semverUtil.WriteRAWVersionFile(jsonContent["version"].(string), versionCmdOptions.VersionFile)
+			err = semverUtil.WriteRAWVersionFile(jsonContent["version"].(string), viper.GetString("versionFileName"))
 		}
 		if err != nil {
 			log.Fatal(err)
 		}
 		if err = semverUtil.AddVersionChanges(
 			versionCmdOptions.RepoPath,
-			versionCmdOptions.VersionFile,
+			viper.GetString("versionFileName"),
 			nextVersion,
-			versionCmdOptions.Author,
-			versionCmdOptions.Email,
+			viper.GetString("author"),
+			viper.GetString("email"),
 		); err != nil {
 			log.Fatal(err)
 		}
 
 		var createGitTagError error
-		if versionCmdOptions.CreateTag {
+		if viper.GetBool("tagVersions") {
 			createGitTagError = semverUtil.MakeGitTag(versionCmdOptions.RepoPath, nextVersion)
 		}
 
-		if versionCmdOptions.Push && createGitTagError == nil {
+		if viper.GetBool("pushChanges") && createGitTagError == nil {
 			if err = semverUtil.Push(versionCmdOptions.RepoPath, versionCmdOptions.SSHFilePath); err != nil {
 				log.Fatalf("cannot push tag: %s", err.Error())
 			}
