@@ -68,6 +68,23 @@ The default author of the commit would be "semver" and the email "semver@no-repl
 
 Right now the pushing feature is only available for repositories managed via ssh. With `--sshFilePath` you can change the default path (`~/.ssh/id_rsa`) to your ssh file.
 
+## Get Version(s)
+
+With the `get` command you can get the current or next possible versions.
+
+```bash
+semver get         # will print the current version
+semver get major   # will print the next major version
+semver get minor   # will print the next minor version
+semver get patch   # will print the next patch version
+```
+
+With the `--raw` or `-r` flag you will get the plain number without description. For example:
+
+```bash
+semver get minor --raw
+```
+
 ## Contribute
 
 Create a fork, make your changes, and send a pull request. :sunglasses:
