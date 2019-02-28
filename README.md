@@ -14,7 +14,10 @@ Download the corresponding [latest binary](https://github.com/meinto/git-semver/
 <name-of-binary> install
 
 # answer the questions
-Name of binary: <name-of-binary>
+Select your downloaded semver file:
+  > files-in-folder
+  > semver_xxx
+  > ...
 How do you want to use semver?
   > global
   > git plugin
