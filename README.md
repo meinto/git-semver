@@ -8,7 +8,7 @@ What i want is small cli tool that handles the version of my repository, no matt
 
 ## Installation
 
-Download the corresponding [latest binary](https://github.com/meinto/git-semver/releases) and run the `install` command. Right now the `init` command is only valid for mac and linux.
+Download the corresponding [latest binary](https://github.com/meinto/git-semver/releases) and run the `install` command. Right now the `install` command is only valid for mac and linux.
 
 ```bash
 <name-of-binary> install
