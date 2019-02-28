@@ -94,7 +94,7 @@ func fileList(rootPath string) ([]string, error) {
 	var files []string
 
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
-		if strings.HasPrefix(path, "semver_") {
+		if !strings.HasPrefix(path, "semver_") {
 			return nil
 		}
 		files = append(files, path)
