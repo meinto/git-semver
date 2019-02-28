@@ -16,8 +16,8 @@ func init() {
 }
 
 var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "init semver",
+	Use:   "install",
+	Short: "install semver",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		filePath, err := pathToSemverFile()
