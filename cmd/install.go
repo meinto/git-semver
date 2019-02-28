@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
@@ -93,7 +94,7 @@ func fileList(rootPath string) ([]string, error) {
 	var files []string
 
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
-		if path == "." {
+		if strings.HasPrefix(path, "semver_") {
 			return nil
 		}
 		files = append(files, path)
