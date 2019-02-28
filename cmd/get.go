@@ -13,26 +13,22 @@ import (
 	"github.com/spf13/viper"
 )
 
-var nextCmdOptions struct {
+var getCmdOptions struct {
 	RepoPath string
+	PrintRaw bool
 }
 
 func init() {
-	rootCmd.AddCommand(nextCmd)
-	nextCmd.Flags().StringVarP(&versionCmdOptions.RepoPath, "path", "p", ".", "path to git repository")
+	rootCmd.AddCommand(getCmd)
+	getCmd.Flags().StringVarP(&getCmdOptions.RepoPath, "path", "p", ".", "path to git repository")
+	getCmd.Flags().BoolVarP(&getCmdOptions.PrintRaw, "raw", "r", false, "print only the plain version number")
 }
 
-var nextCmd = &cobra.Command{
-	Use:   "next",
-	Short: "next version number",
-	Args:  cobra.MinimumNArgs(1),
+var getCmd = &cobra.Command{
+	Use:   "get",
+	Short: "get version number",
 	Run: func(cmd *cobra.Command, args []string) {
-		nextVersionType := args[0]
-		if nextVersionType != "major" && nextVersionType != "minor" && nextVersionType != "patch" {
-			log.Fatalln("please choose one of these values: major, minor, patch")
-		}
-
-		gitRepoPath, err := filepath.Abs(nextCmdOptions.RepoPath)
+		gitRepoPath, err := filepath.Abs(getCmdOptions.RepoPath)
 		if err != nil {
 			log.Fatalln("cannot resolve repo path: ", err)
 		}
@@ -63,12 +59,28 @@ var nextCmd = &cobra.Command{
 			if !ok {
 				log.Fatalln("current version not set")
 			}
-			nextVersion, err := semverUtil.NextVersion(currentVersion.(string), nextVersionType)
-			if err != nil {
-				log.Fatalln(err)
-			}
 
-			fmt.Println(nextVersion)
+			if len(args) > 0 {
+				nextVersionType := args[0]
+				if nextVersionType != "major" && nextVersionType != "minor" && nextVersionType != "patch" {
+					log.Fatalln("please choose one of these values: major, minor, patch")
+				}
+
+				nextVersion, err := semverUtil.NextVersion(currentVersion.(string), nextVersionType)
+				if err != nil {
+					log.Fatalln(err)
+				}
+
+				if !getCmdOptions.PrintRaw {
+					fmt.Printf("Next %s version: ", nextVersionType)
+				}
+				fmt.Println(nextVersion)
+			} else {
+				if !getCmdOptions.PrintRaw {
+					fmt.Print("Current version: ")
+				}
+				fmt.Println(currentVersion)
+			}
 		}
 	},
 }
