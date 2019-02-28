@@ -12,7 +12,7 @@ jobs:
       - run: go get -u github.com/tcnksm/ghr
       - run: go get ./...
       - run: ./.circleci/build.sh
-      - run: ghr -t $GITHUB_TOKEN v$(cat semver.json | grep -o '"[0-9.]*"' | rev | cut -c2- | rev | cut -c2-) build
+      - run: ghr -t $GITHUB_TOKEN v$(cat VERSION) build
 
 workflows:
   version: 2
