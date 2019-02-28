@@ -52,6 +52,7 @@ func init() {
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "create new version for repository",
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			log.Fatalln("please provide the next version type (major, minor, patch).")
