@@ -25,7 +25,7 @@ func (fs *getCmdFlagsType) RepoPath() string {
 }
 
 func (fs *getCmdFlagsType) VersionFile() string {
-	return viper.GetString("versionFileName")
+	return viper.GetString("versionFile")
 }
 
 func (fs *getCmdFlagsType) VersionFileFormat() string {

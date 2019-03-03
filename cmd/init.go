@@ -19,7 +19,7 @@ var initCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var config struct {
-			VersionFileName string `json:"versionFileName,omitempty"`
+			VersionFile     string `json:"versionFile,omitempty"`
 			VersionFileType string `json:"versionFileType,omitempty"`
 			TagVersions     bool   `json:"tagVersions,omitempty"`
 			PushChanges     bool   `json:"pushChanges,omitempty"`
@@ -27,9 +27,9 @@ var initCmd = &cobra.Command{
 			Email           string `json:"email,omitempty"`
 		}
 
-		versionFileName, err := internal.PromptOptionalText("Name of version file")
+		versionFile, err := internal.PromptOptionalText("Name of version file")
 		internal.LogFatalOnErr(err)
-		config.VersionFileName = versionFileName
+		config.VersionFile = versionFile
 
 		_, versionFileType, err := internal.PromptSelect(
 			"File type of version file",
