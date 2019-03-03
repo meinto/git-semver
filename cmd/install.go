@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/manifoldco/promptui"
-	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
+	"github.com/meinto/git-semver/cmd/internal"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -22,22 +22,22 @@ var installCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		flist, err := fileList(".")
-		cmdUtil.LogFatalOnErr(errors.Wrap(err, "file listing failed"))
+		internal.LogFatalOnErr(errors.Wrap(err, "file listing failed"))
 
-		index, _, err := cmdUtil.PromptSelect(
+		index, _, err := internal.PromptSelect(
 			"Select your downloaded semver file",
 			flist,
 		)
-		cmdUtil.LogFatalOnErr(err)
+		internal.LogFatalOnErr(err)
 
 		filePath, err := filepath.Abs(flist[index])
-		cmdUtil.LogFatalOnErr(errors.Wrap(err, "error getting path to semver file"))
+		internal.LogFatalOnErr(errors.Wrap(err, "error getting path to semver file"))
 
-		index, _, err = cmdUtil.PromptSelect(
+		index, _, err = internal.PromptSelect(
 			"How do you want to use semver",
 			[]string{"global", "git plugin"},
 		)
-		cmdUtil.LogFatalOnErr(err)
+		internal.LogFatalOnErr(err)
 
 		var newFileName string
 		switch index {
@@ -49,11 +49,11 @@ var installCmd = &cobra.Command{
 
 		if _, err := os.Stat(newFileName); !os.IsNotExist(err) {
 			err := replaceFile(newFileName)
-			cmdUtil.LogFatalOnErr(err)
+			internal.LogFatalOnErr(err)
 		}
 
 		err = os.Rename(filePath, newFileName)
-		cmdUtil.LogFatalOnErr(err)
+		internal.LogFatalOnErr(err)
 
 		fmt.Println("successfully moved semver")
 	},

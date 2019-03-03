@@ -5,12 +5,12 @@ import (
 
 	"github.com/gobuffalo/packr"
 	"github.com/meinto/git-semver/cmd/internal/flags"
-	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
+	"github.com/meinto/git-semver/cmd/internal"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&flags.RootCmdFlags.Verbose, "verbose", "v", false, "more logs")
+	flags.RootCmdFlags.Init(rootCmd)
 }
 
 var rootCmd = &cobra.Command{
@@ -19,12 +19,12 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		box := packr.NewBox("../buildAssets")
 		version, err := box.FindString("VERSION")
-		cmdUtil.LogFatalOnErr(err)
+		internal.LogFatalOnErr(err)
 		fmt.Printf("Version of git-semver: %s\n", version)
 	},
 }
 
 func Execute() {
 	err := rootCmd.Execute()
-	cmdUtil.LogFatalOnErr(err)
+	internal.LogFatalOnErr(err)
 }

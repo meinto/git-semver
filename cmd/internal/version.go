@@ -1,11 +1,11 @@
-package util
+package internal
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 
-	semverUtil "github.com/meinto/git-semver/util"
+	"github.com/meinto/git-semver/util"
 	"github.com/pkg/errors"
 )
 
@@ -42,10 +42,10 @@ func WriteVersion(versionFileType, versionFileName, version string, fileContent 
 	case "json":
 		jsonContent := GetJsonContent(fileContent)
 		jsonContent["version"] = version
-		err = semverUtil.WriteJSONVersionFile(jsonContent, versionFileName)
+		err = util.WriteJSONVersionFile(jsonContent, versionFileName)
 		break
 	case "raw":
-		err = semverUtil.WriteRAWVersionFile(version, versionFileName)
+		err = util.WriteRAWVersionFile(version, versionFileName)
 	default:
 		err = errors.New("unknown file type")
 	}

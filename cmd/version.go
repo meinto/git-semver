@@ -5,19 +5,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
-
-	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
-	semverUtil "github.com/meinto/git-semver/util"
+	"path/filepath" 
+   
+	"github.com/meinto/git-semver/cmd/internal"
+	"github.com/meinto/git-semver/util"
 	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
+	"github.com/spf13/cobra" 
 	"github.com/spf13/viper"
 )
 
 var versionCmdOptions struct {
-	RepoPath          string
+	RepoPath          string 
 	VersionFile       string
-	VersionFileFormat string
+	VersionFileFormat string  
 	DryRun            bool
 	CreateTag         bool
 	Push              bool
@@ -44,8 +44,8 @@ func init() {
 	viper.BindPFlag("author", versionCmd.Flags().Lookup("author"))
 	viper.BindPFlag("email", versionCmd.Flags().Lookup("email"))
 
-	defaultSSHFilePath, err := semverUtil.GetDefaultSSHFilePath()
-	cmdUtil.LogOnError(err)
+	defaultSSHFilePath, err := util.GetDefaultSSHFilePath()
+	internal.LogOnError(err)
 	versionCmd.Flags().StringVar(&versionCmdOptions.SSHFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
 }
 
@@ -55,26 +55,26 @@ var versionCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		nextVersionType := args[0]
-		cmdUtil.ValidateNextVersionType(nextVersionType)
+		internal.ValidateNextVersionType(nextVersionType)
 
 		gitRepoPath, err := filepath.Abs(versionCmdOptions.RepoPath)
-		cmdUtil.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
+		internal.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
-		pathToVersionFile := cmdUtil.VersionFilePath(gitRepoPath, viper.GetString("versionFileName"))
+		pathToVersionFile := internal.VersionFilePath(gitRepoPath, viper.GetString("versionFileName"))
 
 		_, err = os.Stat(pathToVersionFile)
-		cmdUtil.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
+		internal.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
 
 		versionFile, err := os.Open(pathToVersionFile)
-		cmdUtil.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
+		internal.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
 		defer versionFile.Close()
 
 		fileContent, err := ioutil.ReadAll(versionFile)
-		cmdUtil.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
-		currentVersion := cmdUtil.GetVersion(viper.GetString("versionFileType"), fileContent)
+		internal.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
+		currentVersion := internal.GetVersion(viper.GetString("versionFileType"), fileContent)
 
-		nextVersion, err := semverUtil.NextVersion(currentVersion, nextVersionType)
-		cmdUtil.LogFatalOnErr(err)
+		nextVersion, err := util.NextVersion(currentVersion, nextVersionType)
+		internal.LogFatalOnErr(err)
 
 		log.Println("new version: ", nextVersion)
 		if versionCmdOptions.DryRun {
@@ -82,36 +82,36 @@ var versionCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		cmdUtil.ValidateReadyForPushingChanges(
+		internal.ValidateReadyForPushingChanges(
 			versionCmdOptions.RepoPath,
 			versionCmdOptions.SSHFilePath,
 			viper.GetBool("pushChanges"),
 		)
 
-		err = cmdUtil.WriteVersion(
+		err = internal.WriteVersion(
 			viper.GetString("versionFileType"),
 			viper.GetString("versionFileName"),
 			nextVersion,
 			fileContent,
 		)
-		cmdUtil.LogFatalOnErr(err)
+		internal.LogFatalOnErr(err)
 
-		err = semverUtil.AddVersionChanges(
+		err = util.AddVersionChanges(
 			versionCmdOptions.RepoPath,
 			viper.GetString("versionFileName"),
 			nextVersion,
 			viper.GetString("author"),
 			viper.GetString("email"),
 		)
-		cmdUtil.LogFatalOnErr(err)
+		internal.LogFatalOnErr(err)
 
 		var createGitTagError error
 		if viper.GetBool("tagVersions") {
-			createGitTagError = semverUtil.MakeGitTag(versionCmdOptions.RepoPath, nextVersion)
+			createGitTagError = util.MakeGitTag(versionCmdOptions.RepoPath, nextVersion)
 		}
 
 		if viper.GetBool("pushChanges") && createGitTagError == nil {
-			if err = semverUtil.Push(versionCmdOptions.RepoPath, versionCmdOptions.SSHFilePath); err != nil {
+			if err = util.Push(versionCmdOptions.RepoPath, versionCmdOptions.SSHFilePath); err != nil {
 				log.Fatalf("cannot push tag: %s", err.Error())
 			}
 		}
