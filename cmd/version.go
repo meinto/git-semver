@@ -44,7 +44,7 @@ var versionCmd = &cobra.Command{
 
 		fileContent, err := ioutil.ReadAll(versionFile)
 		internal.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
-		currentVersion := internal.GetVersion(flags.VersionCmdFlags.VersionFileFormat(), fileContent)
+		currentVersion := internal.GetVersion(flags.VersionCmdFlags.VersionFileType(), fileContent)
 
 		nextVersion, err := util.NextVersion(currentVersion, nextVersionType)
 		internal.LogFatalOnErr(err)
@@ -62,7 +62,7 @@ var versionCmd = &cobra.Command{
 		)
 
 		err = internal.WriteVersion(
-			flags.VersionCmdFlags.VersionFileFormat(),
+			flags.VersionCmdFlags.VersionFileType(),
 			flags.VersionCmdFlags.VersionFile(),
 			nextVersion,
 			fileContent,

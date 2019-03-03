@@ -35,8 +35,8 @@ By default this cli tool uses a `semver.json` in the root folder of a git reposi
 semver version [major|minor|patch] \
   [--dryrun] \                        # default: false -- only show how version would change
   [-p <path-to-repo>] \               # default: .
-  [-o <name-of-version-file>] \       # default: semver.json -- define alternative version json file
-  [-f <version-file-type>] \          # default: json -- you set the values "json" or "raw"
+  [-f <version-file-name>] \          # default: semver.json -- define alternative version json file
+  [-t <version-file-type>] \          # default: json -- you set the values "json" or "raw"
   [--tag] \                           # default: false -- tag the commit with the new version
   [--push] \                          # default: false -- push all changes made by semver
   [-a <name-of-author>] \             # default: semver -- (only relevant when --push is set)
@@ -48,21 +48,21 @@ You can create an individual `semver.config.json` file in the root of your proje
 
 ### Custom version file
 
-By default `semver` lookup the `semver.json` in the current directory. If you want to store your version in a custom json file use the flag `-o`. The cli tool only overrides the property `version` and leaves other properties untouched.
+By default `semver` lookup the `semver.json` in the current directory. If you want to store your version in a custom json file use the flag `-f`. The cli tool only overrides the property `version` and leaves other properties untouched.
 
-If you prefer a raw `VERSION` file which contains only the version number, you can do this by using the flags `-o` in combination with `-f`:
+If you prefer a raw `VERSION` file which contains only the version number, you can do this by using the flags `-f` in combination with `-f`:
 
 ```bash
-semver version minor -o VERSION -f raw
+semver version minor -f VERSION -t raw
 ```
 
 ### Create git tag
 
-With the flag `-t`, `semver` will create a git tag of the new version e.g.: `v1.0.0`.
+With the flag `-T`, `semver` will create a git tag of the new version e.g.: `v1.0.0`.
 
 ### Push version changes
 
-`semver` writes the new version back into the config file. As described, you can also tag the commit using the flag `-t`. To automatically push these changes made by `semver`, use the flag `-P`.
+`semver` writes the new version back into the config file. As described, you can also tag the commit using the flag `-T`. To automatically push these changes made by `semver`, use the flag `-P`.
 
 The default author of the commit would be "semver" and the email "semver@no-reply.git". To change this, provide the flags `-a` (auhtor) and `-e` (email).
 

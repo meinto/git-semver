@@ -8,15 +8,15 @@ import (
 )
 
 type versionCmdFlagsType struct {
-	repoPath          string
-	versionFile       string
-	versionFileFormat string
-	dryRun            bool
-	createTag         bool
-	push              bool
-	author            string
-	email             string
-	sshFilePath       string
+	repoPath        string
+	versionFile     string
+	versionFileType string
+	dryRun          bool
+	createTag       bool
+	push            bool
+	author          string
+	email           string
+	sshFilePath     string
 }
 
 var VersionCmdFlags versionCmdFlagsType
@@ -25,14 +25,11 @@ func (fs *versionCmdFlagsType) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&VersionCmdFlags.repoPath, "path", "p", ".", "path to git repository")
 	cmd.Flags().StringVarP(&VersionCmdFlags.author, "author", "a", "semver", "name of the author")
 	cmd.Flags().StringVarP(&VersionCmdFlags.email, "email", "e", "semver@no-reply.git", "email of the author")
-	cmd.Flags().StringVarP(&VersionCmdFlags.versionFile, "outfile", "o", "semver.json", "name of version file")
-	cmd.Flags().StringVarP(&VersionCmdFlags.versionFileFormat, "outfileFormat", "f", "json", "format of outfile (json, raw)")
 	cmd.Flags().BoolVarP(&VersionCmdFlags.dryRun, "dryrun", "d", false, "only log how version number would change")
-	cmd.Flags().BoolVarP(&VersionCmdFlags.createTag, "tag", "t", false, "create a git tag")
+	cmd.Flags().BoolVarP(&VersionCmdFlags.createTag, "tag", "T", false, "create a git tag")
 	cmd.Flags().BoolVarP(&VersionCmdFlags.push, "push", "P", false, "push git tags and version changes")
+	versionFileFlags(cmd)
 
-	bindViperFlag("versionFileName", cmd.Flags().Lookup("outfile"))
-	bindViperFlag("versionFileType", cmd.Flags().Lookup("outfileFormat"))
 	bindViperFlag("tagVersions", cmd.Flags().Lookup("tag"))
 	bindViperFlag("pushChanges", cmd.Flags().Lookup("push"))
 	bindViperFlag("author", cmd.Flags().Lookup("author"))
@@ -49,10 +46,10 @@ func (fs *versionCmdFlagsType) RepoPath() string {
 }
 
 func (fs *versionCmdFlagsType) VersionFile() string {
-	return viper.GetString("versionFileName")
+	return viper.GetString("versionFile")
 }
 
-func (fs *versionCmdFlagsType) VersionFileFormat() string {
+func (fs *versionCmdFlagsType) VersionFileType() string {
 	return viper.GetString("versionFileType")
 }
 

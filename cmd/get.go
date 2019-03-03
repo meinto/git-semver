@@ -23,7 +23,7 @@ var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get version number",
 	Run: func(cmd *cobra.Command, args []string) {
-		gitRepoPath, err := filepath.Abs(flags.GetCmdFlags.RepoPath())
+		gitRepoPath, err := filepath.Abs(flags.GetCmdFlags.RepoPath()) 
 		internal.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
 		pathToVersionFile := internal.VersionFilePath(gitRepoPath, flags.GetCmdFlags.VersionFile())
