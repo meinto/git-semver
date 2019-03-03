@@ -1,5 +1,8 @@
 #!/bin/bash
 
+rm -rf ./build
+go generate
+
 mkdir build
 GOOS=darwin GOARCH=386 go build -o build/semver_darwin_386 .
 GOOS=darwin GOARCH=amd64 go build -o build/semver_darwin_amd64 .

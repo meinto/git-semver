@@ -1,5 +1,7 @@
 package main
 
+//go:generate ./.circleci/generate-assets.sh
+
 import (
 	"log"
 
