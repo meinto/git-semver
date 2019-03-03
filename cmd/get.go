@@ -12,7 +12,6 @@ import (
 	"github.com/meinto/git-semver/util"
 	"github.com/pkg/errors" 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -27,18 +26,18 @@ var getCmd = &cobra.Command{
 		gitRepoPath, err := filepath.Abs(flags.GetCmdFlags.RepoPath())
 		internal.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
-		pathToVersionFile := internal.VersionFilePath(gitRepoPath, viper.GetString("versionFileName"))
+		pathToVersionFile := internal.VersionFilePath(gitRepoPath, flags.GetCmdFlags.VersionFile())
 
 		_, err = os.Stat(pathToVersionFile) 
 		internal.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
 
 		versionFile, err := os.Open(pathToVersionFile)
-		internal.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
+		internal.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", flags.GetCmdFlags.VersionFile())))
 		defer versionFile.Close()
 
 		byteValue, err := ioutil.ReadAll(versionFile)
 		internal.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
-		currentVersion := internal.GetVersion(viper.GetString("versionFileType"), byteValue)
+		currentVersion := internal.GetVersion(flags.GetCmdFlags.VersionFileFormat(), byteValue)
 
 		if len(args) > 0 {
 			nextVersionType := args[0]

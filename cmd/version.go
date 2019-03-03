@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/meinto/git-semver/cmd/internal/flags"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,42 +12,11 @@ import (
 	"github.com/meinto/git-semver/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra" 
-	"github.com/spf13/viper"
 )
 
-var versionCmdOptions struct {
-	RepoPath          string 
-	VersionFile       string
-	VersionFileFormat string  
-	DryRun            bool
-	CreateTag         bool
-	Push              bool
-	Author            string
-	Email             string
-	SSHFilePath       string
-}
-
-func init() {
+func init() { 
 	rootCmd.AddCommand(versionCmd)
-	versionCmd.Flags().StringVarP(&versionCmdOptions.RepoPath, "path", "p", ".", "path to git repository")
-	versionCmd.Flags().StringVarP(&versionCmdOptions.Author, "author", "a", "semver", "name of the author")
-	versionCmd.Flags().StringVarP(&versionCmdOptions.Email, "email", "e", "semver@no-reply.git", "email of the author")
-	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFile, "outfile", "o", "semver.json", "name of version file")
-	versionCmd.Flags().StringVarP(&versionCmdOptions.VersionFileFormat, "outfileFormat", "f", "json", "format of outfile (json, raw)")
-	versionCmd.Flags().BoolVarP(&versionCmdOptions.DryRun, "dryrun", "d", false, "only log how version number would change")
-	versionCmd.Flags().BoolVarP(&versionCmdOptions.CreateTag, "tag", "t", false, "create a git tag")
-	versionCmd.Flags().BoolVarP(&versionCmdOptions.Push, "push", "P", false, "push git tags and version changes")
-
-	viper.BindPFlag("versionFileName", versionCmd.Flags().Lookup("outfile"))
-	viper.BindPFlag("versionFileType", versionCmd.Flags().Lookup("outfileFormat"))
-	viper.BindPFlag("tagVersions", versionCmd.Flags().Lookup("tag"))
-	viper.BindPFlag("pushChanges", versionCmd.Flags().Lookup("push"))
-	viper.BindPFlag("author", versionCmd.Flags().Lookup("author"))
-	viper.BindPFlag("email", versionCmd.Flags().Lookup("email"))
-
-	defaultSSHFilePath, err := util.GetDefaultSSHFilePath()
-	internal.LogOnError(err)
-	versionCmd.Flags().StringVar(&versionCmdOptions.SSHFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
+	flags.VersionCmdFlags.Init(versionCmd)
 }
 
 var versionCmd = &cobra.Command{
@@ -57,61 +27,64 @@ var versionCmd = &cobra.Command{
 		nextVersionType := args[0]
 		internal.ValidateNextVersionType(nextVersionType)
 
-		gitRepoPath, err := filepath.Abs(versionCmdOptions.RepoPath)
+		gitRepoPath, err := filepath.Abs(flags.VersionCmdFlags.RepoPath())
 		internal.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
-		pathToVersionFile := internal.VersionFilePath(gitRepoPath, viper.GetString("versionFileName"))
+		pathToVersionFile := internal.VersionFilePath(
+			gitRepoPath, 
+			flags.VersionCmdFlags.VersionFile(),
+		)
 
 		_, err = os.Stat(pathToVersionFile)
 		internal.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
 
 		versionFile, err := os.Open(pathToVersionFile)
-		internal.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
+		internal.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", flags.VersionCmdFlags.VersionFile())))
 		defer versionFile.Close()
 
 		fileContent, err := ioutil.ReadAll(versionFile)
 		internal.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
-		currentVersion := internal.GetVersion(viper.GetString("versionFileType"), fileContent)
+		currentVersion := internal.GetVersion(flags.VersionCmdFlags.VersionFileFormat(), fileContent)
 
 		nextVersion, err := util.NextVersion(currentVersion, nextVersionType)
 		internal.LogFatalOnErr(err)
 
 		log.Println("new version: ", nextVersion)
-		if versionCmdOptions.DryRun {
+		if flags.VersionCmdFlags.DryRun() {
 			log.Println("dry run finished...")
 			os.Exit(1)
 		}
 
 		internal.ValidateReadyForPushingChanges(
-			versionCmdOptions.RepoPath,
-			versionCmdOptions.SSHFilePath,
-			viper.GetBool("pushChanges"),
+			flags.VersionCmdFlags.RepoPath(),
+			flags.VersionCmdFlags.SSHFilePath(),
+			flags.VersionCmdFlags.Push(),
 		)
 
 		err = internal.WriteVersion(
-			viper.GetString("versionFileType"),
-			viper.GetString("versionFileName"),
+			flags.VersionCmdFlags.VersionFileFormat(),
+			flags.VersionCmdFlags.VersionFile(),
 			nextVersion,
 			fileContent,
 		)
 		internal.LogFatalOnErr(err)
 
 		err = util.AddVersionChanges(
-			versionCmdOptions.RepoPath,
-			viper.GetString("versionFileName"),
+			flags.VersionCmdFlags.RepoPath(),
+			flags.VersionCmdFlags.VersionFile(),
 			nextVersion,
-			viper.GetString("author"),
-			viper.GetString("email"),
+			flags.VersionCmdFlags.Author(),
+			flags.VersionCmdFlags.Email(),
 		)
 		internal.LogFatalOnErr(err)
 
 		var createGitTagError error
-		if viper.GetBool("tagVersions") {
-			createGitTagError = util.MakeGitTag(versionCmdOptions.RepoPath, nextVersion)
+		if flags.VersionCmdFlags.CreateTag() {
+			createGitTagError = util.MakeGitTag(flags.VersionCmdFlags.RepoPath(), nextVersion)
 		}
 
-		if viper.GetBool("pushChanges") && createGitTagError == nil {
-			if err = util.Push(versionCmdOptions.RepoPath, versionCmdOptions.SSHFilePath); err != nil {
+		if flags.VersionCmdFlags.Push() && createGitTagError == nil {
+			if err = util.Push(flags.VersionCmdFlags.RepoPath(), flags.VersionCmdFlags.SSHFilePath()); err != nil {
 				log.Fatalf("cannot push tag: %s", err.Error())
 			}
 		}
