@@ -31,12 +31,12 @@ func (fs *versionCmdFlags) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&VersionCmdFlags.createTag, "tag", "t", false, "create a git tag")
 	cmd.Flags().BoolVarP(&VersionCmdFlags.push, "push", "P", false, "push git tags and version changes")
 
-	viper.BindPFlag("versionFileName", cmd.Flags().Lookup("outfile"))
-	viper.BindPFlag("versionFileType", cmd.Flags().Lookup("outfileFormat"))
-	viper.BindPFlag("tagVersions", cmd.Flags().Lookup("tag"))
-	viper.BindPFlag("pushChanges", cmd.Flags().Lookup("push"))
-	viper.BindPFlag("author", cmd.Flags().Lookup("author"))
-	viper.BindPFlag("email", cmd.Flags().Lookup("email"))
+	bindViperFlag("versionFileName", cmd.Flags().Lookup("outfile"))
+	bindViperFlag("versionFileType", cmd.Flags().Lookup("outfileFormat"))
+	bindViperFlag("tagVersions", cmd.Flags().Lookup("tag"))
+	bindViperFlag("pushChanges", cmd.Flags().Lookup("push"))
+	bindViperFlag("author", cmd.Flags().Lookup("author"))
+	bindViperFlag("email", cmd.Flags().Lookup("email"))
 
 	defaultSSHFilePath, err := util.GetDefaultSSHFilePath()
 	util.LogOnError(err, RootCmdFlags.Verbose())

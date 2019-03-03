@@ -20,8 +20,8 @@ func (fs *getCmdFlagsType) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&GetCmdFlags.versionFileFormat, "outfileFormat", "f", "json", "format of outfile (json, raw)")
 	cmd.Flags().BoolVarP(&GetCmdFlags.printRaw, "raw", "r", false, "print only the plain version number")
 
-	viper.BindPFlag("versionFileName", cmd.Flags().Lookup("outfile"))
-	viper.BindPFlag("versionFileType", cmd.Flags().Lookup("outfileFormat"))
+	bindViperFlag("versionFileName", cmd.Flags().Lookup("outfile"))
+	bindViperFlag("versionFileType", cmd.Flags().Lookup("outfileFormat"))
 }
 
 func (fs *getCmdFlagsType) RepoPath() string {
