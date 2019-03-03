@@ -7,7 +7,7 @@ import (
 	"github.com/meinto/git-semver/util"
 )
 
-type versionCmdFlags struct {
+type versionCmdFlagsType struct {
 	repoPath          string
 	versionFile       string
 	versionFileFormat string
@@ -19,9 +19,9 @@ type versionCmdFlags struct {
 	sshFilePath       string
 }
 
-var VersionCmdFlags versionCmdFlags
+var VersionCmdFlags versionCmdFlagsType
 
-func (fs *versionCmdFlags) Init(cmd *cobra.Command) {
+func (fs *versionCmdFlagsType) Init(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&VersionCmdFlags.repoPath, "path", "p", ".", "path to git repository")
 	cmd.Flags().StringVarP(&VersionCmdFlags.author, "author", "a", "semver", "name of the author")
 	cmd.Flags().StringVarP(&VersionCmdFlags.email, "email", "e", "semver@no-reply.git", "email of the author")
@@ -44,38 +44,38 @@ func (fs *versionCmdFlags) Init(cmd *cobra.Command) {
 
 }
 
-func (fs *versionCmdFlags) RepoPath() string {
+func (fs *versionCmdFlagsType) RepoPath() string {
 	return fs.repoPath
 }
 
-func (fs *versionCmdFlags) VersionFile() string {
+func (fs *versionCmdFlagsType) VersionFile() string {
 	return viper.GetString("versionFileName")
 }
 
-func (fs *versionCmdFlags) VersionFileFormat() string {
+func (fs *versionCmdFlagsType) VersionFileFormat() string {
 	return viper.GetString("versionFileType")
 }
 
-func (fs *versionCmdFlags) DryRun() bool {
+func (fs *versionCmdFlagsType) DryRun() bool {
 	return fs.dryRun
 }
 
-func (fs *versionCmdFlags) CreateTag() bool {
+func (fs *versionCmdFlagsType) CreateTag() bool {
 	return viper.GetBool("tagVersions")
 }
 
-func (fs *versionCmdFlags) Push() bool {
+func (fs *versionCmdFlagsType) Push() bool {
 	return viper.GetBool("pushChanges")
 }
 
-func (fs *versionCmdFlags) Author() string {
+func (fs *versionCmdFlagsType) Author() string {
 	return viper.GetString("author")
 }
 
-func (fs *versionCmdFlags) Email() string {
+func (fs *versionCmdFlagsType) Email() string {
 	return viper.GetString("email")
 }
 
-func (fs *versionCmdFlags) SSHFilePath() string {
+func (fs *versionCmdFlagsType) SSHFilePath() string {
 	return fs.sshFilePath
 }

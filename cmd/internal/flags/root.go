@@ -4,16 +4,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type rootCmdFlags struct {
+type rootCmdFlagsType struct {
 	verbose bool
 }
 
-var RootCmdFlags rootCmdFlags
+var RootCmdFlags rootCmdFlagsType
 
-func (fs *rootCmdFlags) Init(cmd *cobra.Command) {
+func (fs *rootCmdFlagsType) Init(cmd *cobra.Command) {
 	cmd.PersistentFlags().BoolVarP(&RootCmdFlags.verbose, "verbose", "v", false, "more logs")
 }
 
-func (fs *rootCmdFlags) Verbose() bool {
+func (fs *rootCmdFlagsType) Verbose() bool {
 	return fs.verbose
 }
