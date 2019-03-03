@@ -43,7 +43,6 @@ func WriteVersion(versionFileType, versionFileName, version string, fileContent 
 		jsonContent := GetJsonContent(fileContent)
 		jsonContent["version"] = version
 		err = util.WriteJSONVersionFile(jsonContent, versionFileName)
-		break
 	case "raw":
 		err = util.WriteRAWVersionFile(version, versionFileName)
 	default:
