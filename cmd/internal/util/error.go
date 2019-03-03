@@ -9,3 +9,9 @@ func LogFatalOnErr(err error) {
 		log.Fatal(err.Error())
 	}
 }
+
+func LogFatalIfNotOk(ok bool, message string) {
+	if !ok {
+		log.Fatal(message)
+	}
+}

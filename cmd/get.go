@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -33,51 +31,30 @@ var getCmd = &cobra.Command{
 		gitRepoPath, err := filepath.Abs(getCmdOptions.RepoPath)
 		cmdUtil.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
-		var jsonContent = make(map[string]interface{})
-		pathToVersionFile := gitRepoPath + "/" + viper.GetString("versionFileName")
+		pathToVersionFile := cmdUtil.VersionFilePath(gitRepoPath, viper.GetString("versionFileName"))
 
-		if _, err := os.Stat(pathToVersionFile); os.IsNotExist(err) {
-			log.Printf("%s doesn't exist. creating one...", viper.GetString("versionFileName"))
-			jsonContent = make(map[string]interface{})
-			jsonContent["version"] = "1.0.0"
+		_, err = os.Stat(pathToVersionFile)
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
+
+		versionFile, err := os.Open(pathToVersionFile)
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
+		defer versionFile.Close()
+
+		byteValue, err := ioutil.ReadAll(versionFile)
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
+		currentVersion := cmdUtil.GetVersion(viper.GetString("versionFileType"), byteValue)
+
+		if len(args) > 0 {
+			nextVersionType := args[0]
+			cmdUtil.ValidateNextVersionType(nextVersionType)
+
+			nextVersion, err := semverUtil.NextVersion(currentVersion, nextVersionType)
+			cmdUtil.LogFatalOnErr(err)
+
+			cmdUtil.PrintNextVersion(nextVersionType, nextVersion, getCmdOptions.PrintRaw)
 		} else {
-			versionFile, err := os.Open(pathToVersionFile)
-			cmdUtil.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
-			defer versionFile.Close()
-
-			byteValue, _ := ioutil.ReadAll(versionFile)
-
-			switch viper.GetString("versionFileType") {
-			case "json":
-				json.Unmarshal(byteValue, &jsonContent)
-			case "raw":
-				jsonContent["version"] = string(byteValue)
-			}
-
-			currentVersion, ok := jsonContent["version"]
-			if !ok {
-				log.Fatalln("current version not set")
-			}
-
-			if len(args) > 0 {
-				nextVersionType := args[0]
-				if nextVersionType != "major" && nextVersionType != "minor" && nextVersionType != "patch" {
-					log.Fatalln("please choose one of these values: major, minor, patch")
-				}
-
-				nextVersion, err := semverUtil.NextVersion(currentVersion.(string), nextVersionType)
-				cmdUtil.LogFatalOnErr(err)
-
-				if !getCmdOptions.PrintRaw {
-					fmt.Printf("Next %s version: ", nextVersionType)
-				}
-				fmt.Println(nextVersion)
-			} else {
-				if !getCmdOptions.PrintRaw {
-					fmt.Print("Current version: ")
-				}
-				fmt.Println(currentVersion)
-			}
+			cmdUtil.PrintCurrentVersion(currentVersion, getCmdOptions.PrintRaw)
 		}
+
 	},
 }
