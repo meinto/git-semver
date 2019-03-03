@@ -28,17 +28,21 @@ func (fs *versionCmdFlagsType) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&VersionCmdFlags.dryRun, "dryrun", "d", false, "only log how version number would change")
 	cmd.Flags().BoolVarP(&VersionCmdFlags.createTag, "tag", "T", false, "create a git tag")
 	cmd.Flags().BoolVarP(&VersionCmdFlags.push, "push", "P", false, "push git tags and version changes")
-	versionFileFlags(cmd)
-
-	bindViperFlag("tagVersions", cmd.Flags().Lookup("tag"))
-	bindViperFlag("pushChanges", cmd.Flags().Lookup("push"))
-	bindViperFlag("author", cmd.Flags().Lookup("author"))
-	bindViperFlag("email", cmd.Flags().Lookup("email"))
+	cmd.Flags().StringVarP(&GetCmdFlags.versionFile, "versionFile", "f", "VERSION", "name of version file")
+	cmd.Flags().StringVarP(&GetCmdFlags.versionFileType, "versionFileType", "t", "raw", "type of version file (json, raw)")
 
 	defaultSSHFilePath, err := util.GetDefaultSSHFilePath()
 	util.LogOnError(err, RootCmdFlags.Verbose())
 	cmd.Flags().StringVar(&VersionCmdFlags.sshFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
+}
 
+func (fs *versionCmdFlagsType) PreRun(cmd *cobra.Command) {
+	bindViperFlag("versionFile", cmd.Flags().Lookup("versionFile"))
+	bindViperFlag("versionFileType", cmd.Flags().Lookup("versionFileType"))
+	bindViperFlag("tagVersions", cmd.Flags().Lookup("tag"))
+	bindViperFlag("pushChanges", cmd.Flags().Lookup("push"))
+	bindViperFlag("author", cmd.Flags().Lookup("author"))
+	bindViperFlag("email", cmd.Flags().Lookup("email"))
 }
 
 func (fs *versionCmdFlagsType) RepoPath() string {

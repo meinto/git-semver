@@ -23,6 +23,9 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "create new version for repository",
 	Args:  cobra.MinimumNArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		flags.VersionCmdFlags.PreRun(cmd)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		nextVersionType := args[0]
 		internal.ValidateNextVersionType(nextVersionType)

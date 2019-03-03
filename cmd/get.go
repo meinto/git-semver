@@ -22,6 +22,9 @@ func init() {
 var getCmd = &cobra.Command{     
 	Use:   "get",
 	Short: "get version number",
+	PreRun: func(cmd *cobra.Command, args []string) {
+		flags.GetCmdFlags.PreRun(cmd)
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		gitRepoPath, err := filepath.Abs(flags.GetCmdFlags.RepoPath()) 
 		internal.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
