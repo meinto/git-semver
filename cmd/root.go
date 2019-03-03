@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
+	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -14,8 +12,6 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	err := rootCmd.Execute()
+	cmdUtil.LogFatalOnErr(err)
 }
