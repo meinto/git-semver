@@ -4,9 +4,14 @@ import (
 	"fmt"
 
 	"github.com/gobuffalo/packr"
+	"github.com/meinto/git-semver/cmd/internal/flags"
 	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	rootCmd.PersistentFlags().BoolVarP(&flags.RootCmdFlags.Verbose, "verbose", "v", false, "more logs")
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "semver",

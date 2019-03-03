@@ -2,17 +2,26 @@ package util
 
 import (
 	"log"
+
+	"github.com/meinto/git-semver/cmd/internal/flags"
 )
+
+func pattern() string {
+	if flags.RootCmdFlags.Verbose {
+		return "%+v\n"
+	}
+	return "%v\n"
+}
 
 func LogOnError(err error) {
 	if err != nil {
-		log.Printf("%+v\n", err)
+		log.Printf(pattern(), err)
 	}
 }
 
 func LogFatalOnErr(err error) {
 	if err != nil {
-		log.Fatalf("%+v\n", err)
+		log.Fatalf(pattern(), err)
 	}
 }
 
