@@ -89,7 +89,7 @@ var versionCmd = &cobra.Command{
 		)
 
 		err = cmdUtil.WriteVersion(
-			nextVersionType,
+			viper.GetString("versionFileType"),
 			viper.GetString("versionFileName"),
 			nextVersion,
 			fileContent,
