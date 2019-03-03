@@ -3,9 +3,9 @@ package cmd
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 
 	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -27,46 +27,50 @@ var initCmd = &cobra.Command{
 			Email           string `json:"email,omitempty"`
 		}
 
-		versionFileName, _ := cmdUtil.PromptOptionalText("Name of version file")
+		versionFileName, err := cmdUtil.PromptOptionalText("Name of version file")
+		cmdUtil.LogFatalOnErr(err)
 		config.VersionFileName = versionFileName
 
-		_, versionFileType, _ := cmdUtil.PromptSelect(
+		_, versionFileType, err := cmdUtil.PromptSelect(
 			"File type of version file",
 			[]string{"json", "raw"},
 		)
+		cmdUtil.LogFatalOnErr(err)
 		config.VersionFileType = versionFileType
 
-		_, shouldBeTagged, _ := cmdUtil.PromptSelect(
+		_, shouldBeTagged, err := cmdUtil.PromptSelect(
 			"Should new version automatically be tagged",
 			[]string{"yes", "no"},
 		)
+		cmdUtil.LogFatalOnErr(err)
 		if shouldBeTagged == "yes" {
 			config.TagVersions = true
 		}
 
-		_, changesShouldBePushed, _ := cmdUtil.PromptSelect(
+		_, changesShouldBePushed, err := cmdUtil.PromptSelect(
 			"Should changes made by semver automatically be pushed",
 			[]string{"yes", "no"},
 		)
+		cmdUtil.LogFatalOnErr(err)
 
 		if changesShouldBePushed == "yes" {
 			config.PushChanges = true
 
-			author, _ := cmdUtil.PromptOptionalText("Author of version commits")
+			author, err := cmdUtil.PromptOptionalText("Author of version commits")
+			cmdUtil.LogFatalOnErr(err)
 			if author != "" {
 				config.Author = author
 			}
 
-			email, _ := cmdUtil.PromptOptionalText("Email of version commits")
+			email, err := cmdUtil.PromptOptionalText("Email of version commits")
+			cmdUtil.LogFatalOnErr(err)
 			if email != "" {
 				config.Email = email
 			}
 		}
 
 		jsonContent, _ := json.MarshalIndent(config, "", "  ")
-		err := ioutil.WriteFile("semver.config.json", jsonContent, 0644)
-		if err != nil {
-			log.Fatalf("error writing semver.config.json: %s", err.Error())
-		}
+		err = ioutil.WriteFile("semver.config.json", jsonContent, 0644)
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, "error writing semver.config.json"))
 	},
 }
