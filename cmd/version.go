@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 
+	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
 	semverUtil "github.com/meinto/git-semver/util"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -43,9 +45,7 @@ func init() {
 	viper.BindPFlag("email", versionCmd.Flags().Lookup("email"))
 
 	defaultSSHFilePath, err := semverUtil.GetDefaultSSHFilePath()
-	if err != nil {
-		log.Println(err)
-	}
+	cmdUtil.LogOnError(err)
 	versionCmd.Flags().StringVar(&versionCmdOptions.SSHFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
 }
 
@@ -54,88 +54,56 @@ var versionCmd = &cobra.Command{
 	Short: "create new version for repository",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			log.Fatalln("please provide the next version type (major, minor, patch).")
-		}
-
 		nextVersionType := args[0]
-		if nextVersionType != "major" && nextVersionType != "minor" && nextVersionType != "patch" {
-			log.Fatalln("please choose one of these values: major, minor, patch")
-		}
+		cmdUtil.ValidateNextVersionType(nextVersionType)
 
 		gitRepoPath, err := filepath.Abs(versionCmdOptions.RepoPath)
-		if err != nil {
-			log.Fatalln("cannot resolve repo path: ", err)
-		}
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
-		var jsonContent = make(map[string]interface{})
-		pathToVersionFile := gitRepoPath + "/" + viper.GetString("versionFileName")
-		if _, err := os.Stat(pathToVersionFile); os.IsNotExist(err) {
-			log.Printf("%s doesn't exist. creating one...", viper.GetString("versionFileName"))
-			jsonContent = make(map[string]interface{})
-			jsonContent["version"] = "1.0.0"
-		} else {
-			versionFile, err := os.Open(pathToVersionFile)
-			if err != nil {
-				log.Fatalf("cannot read %s: %s", viper.GetString("versionFileName"), err.Error())
-			}
-			defer versionFile.Close()
+		pathToVersionFile := cmdUtil.VersionFilePath(gitRepoPath, viper.GetString("versionFileName"))
 
-			byteValue, _ := ioutil.ReadAll(versionFile)
+		_, err = os.Stat(pathToVersionFile)
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
 
-			switch viper.GetString("versionFileType") {
-			case "json":
-				json.Unmarshal(byteValue, &jsonContent)
-			case "raw":
-				jsonContent["version"] = string(byteValue)
-			}
+		versionFile, err := os.Open(pathToVersionFile)
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
+		defer versionFile.Close()
 
-			currentVersion, ok := jsonContent["version"]
-			if !ok {
-				log.Fatalln("current version not set")
-			}
-			nextVersion, err := semverUtil.NextVersion(currentVersion.(string), nextVersionType)
-			if err != nil {
-				log.Fatalln(err)
-			}
+		fileContent, err := ioutil.ReadAll(versionFile)
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
+		currentVersion := cmdUtil.GetVersion(viper.GetString("versionFileType"), fileContent)
 
-			jsonContent["version"] = nextVersion
-		}
+		nextVersion, err := semverUtil.NextVersion(currentVersion, nextVersionType)
+		cmdUtil.LogFatalOnErr(err)
 
-		nextVersion := jsonContent["version"].(string)
 		log.Println("new version: ", nextVersion)
 		if versionCmdOptions.DryRun {
 			log.Println("dry run finished...")
 			os.Exit(1)
 		}
 
-		if viper.GetBool("pushChanges") {
-			if err = semverUtil.CheckIfRepoIsClean(versionCmdOptions.RepoPath); err != nil {
-				log.Fatal(err)
-			}
-			if err = semverUtil.CheckIfSSHFileExists(versionCmdOptions.SSHFilePath); err != nil {
-				log.Fatal(err)
-			}
-		}
+		cmdUtil.ValidateReadyForPushingChanges(
+			versionCmdOptions.RepoPath,
+			versionCmdOptions.SSHFilePath,
+			viper.GetBool("pushChanges"),
+		)
 
-		switch viper.GetString("versionFileType") {
-		case "json":
-			err = semverUtil.WriteJSONVersionFile(jsonContent, viper.GetString("versionFileName"))
-		case "raw":
-			err = semverUtil.WriteRAWVersionFile(jsonContent["version"].(string), viper.GetString("versionFileName"))
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err = semverUtil.AddVersionChanges(
+		err = cmdUtil.WriteVersion(
+			nextVersionType,
+			viper.GetString("versionFileName"),
+			nextVersion,
+			fileContent,
+		)
+		cmdUtil.LogFatalOnErr(err)
+
+		err = semverUtil.AddVersionChanges(
 			versionCmdOptions.RepoPath,
 			viper.GetString("versionFileName"),
 			nextVersion,
 			viper.GetString("author"),
 			viper.GetString("email"),
-		); err != nil {
-			log.Fatal(err)
-		}
+		)
+		cmdUtil.LogFatalOnErr(err)
 
 		var createGitTagError error
 		if viper.GetBool("tagVersions") {
