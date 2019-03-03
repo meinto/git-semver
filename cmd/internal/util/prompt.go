@@ -2,6 +2,7 @@ package util
 
 import (
 	"github.com/manifoldco/promptui"
+	"github.com/pkg/errors"
 )
 
 func PromptSelect(label string, options []string) (int, string, error) {
@@ -9,24 +10,14 @@ func PromptSelect(label string, options []string) (int, string, error) {
 		Label: label,
 		Items: options,
 	}
-
 	index, _, err := prompt.Run()
-	if err != nil {
-		return 0, "", err
-	}
-
-	return index, options[index], nil
+	return index, options[index], errors.Wrap(err, "error running select promt")
 }
 
 func PromptOptionalText(label string) (string, error) {
 	getValue := promptui.Prompt{
 		Label: label,
 	}
-
 	value, err := getValue.Run()
-	if err != nil {
-		return "", err
-	}
-
-	return value, nil
+	return value, errors.Wrap(err, "error running optional text promt")
 }

@@ -1,7 +1,9 @@
 package util
 
-import "fmt"
+import (
+	"github.com/pkg/errors"
+)
 
 func noValidGitRepo(err error) error {
-	return fmt.Errorf("this is no valid git repository: %s", err.Error())
+	return errors.Wrap(err, "this is no valid git repository")
 }
