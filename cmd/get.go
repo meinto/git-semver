@@ -8,7 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
+	cmdUtil "github.com/meinto/git-semver/cmd/internal/util"
 	semverUtil "github.com/meinto/git-semver/util"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,21 +31,18 @@ var getCmd = &cobra.Command{
 	Short: "get version number",
 	Run: func(cmd *cobra.Command, args []string) {
 		gitRepoPath, err := filepath.Abs(getCmdOptions.RepoPath)
-		if err != nil {
-			log.Fatalln("cannot resolve repo path: ", err)
-		}
+		cmdUtil.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
 		var jsonContent = make(map[string]interface{})
 		pathToVersionFile := gitRepoPath + "/" + viper.GetString("versionFileName")
+
 		if _, err := os.Stat(pathToVersionFile); os.IsNotExist(err) {
 			log.Printf("%s doesn't exist. creating one...", viper.GetString("versionFileName"))
 			jsonContent = make(map[string]interface{})
 			jsonContent["version"] = "1.0.0"
 		} else {
 			versionFile, err := os.Open(pathToVersionFile)
-			if err != nil {
-				log.Fatalf("cannot read %s: %s", viper.GetString("versionFileName"), err.Error())
-			}
+			cmdUtil.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", viper.GetString("versionFileName"))))
 			defer versionFile.Close()
 
 			byteValue, _ := ioutil.ReadAll(versionFile)
@@ -67,9 +66,7 @@ var getCmd = &cobra.Command{
 				}
 
 				nextVersion, err := semverUtil.NextVersion(currentVersion.(string), nextVersionType)
-				if err != nil {
-					log.Fatalln(err)
-				}
+				cmdUtil.LogFatalOnErr(err)
 
 				if !getCmdOptions.PrintRaw {
 					fmt.Printf("Next %s version: ", nextVersionType)
