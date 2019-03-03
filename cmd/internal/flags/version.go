@@ -28,8 +28,8 @@ func (fs *versionCmdFlagsType) Init(cmd *cobra.Command) {
 	cmd.Flags().BoolVarP(&VersionCmdFlags.dryRun, "dryrun", "d", false, "only log how version number would change")
 	cmd.Flags().BoolVarP(&VersionCmdFlags.createTag, "tag", "T", false, "create a git tag")
 	cmd.Flags().BoolVarP(&VersionCmdFlags.push, "push", "P", false, "push git tags and version changes")
-	cmd.Flags().StringVarP(&GetCmdFlags.versionFile, "versionFile", "f", "VERSION", "name of version file")
-	cmd.Flags().StringVarP(&GetCmdFlags.versionFileType, "versionFileType", "t", "raw", "type of version file (json, raw)")
+	cmd.Flags().StringVarP(&VersionCmdFlags.versionFile, "versionFile", "f", "VERSION", "name of version file")
+	cmd.Flags().StringVarP(&VersionCmdFlags.versionFileType, "versionFileType", "t", "raw", "type of version file (json, raw)")
 
 	defaultSSHFilePath, err := util.GetDefaultSSHFilePath()
 	util.LogOnError(err, RootCmdFlags.Verbose())
