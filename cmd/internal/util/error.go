@@ -6,13 +6,13 @@ import (
 
 func LogOnError(err error) {
 	if err != nil {
-		log.Println(err.Error())
+		log.Printf("%+v\n", err)
 	}
 }
 
 func LogFatalOnErr(err error) {
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatalf("%+v\n", err)
 	}
 }
 
