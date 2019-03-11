@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
+	"github.com/meinto/cobra-utils"
 	"github.com/meinto/git-semver/cmd/internal"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -31,14 +32,14 @@ var initCmd = &cobra.Command{
 		internal.LogFatalOnErr(err)
 		config.VersionFile = versionFile
 
-		_, versionFileType, err := internal.PromptSelect(
+		_, versionFileType, err := cobraUtils.PromptSelect(
 			"File type of version file",
 			[]string{"json", "raw"},
 		)
 		internal.LogFatalOnErr(err)
 		config.VersionFileType = versionFileType
 
-		_, shouldBeTagged, err := internal.PromptSelect(
+		_, shouldBeTagged, err := cobraUtils.PromptSelect(
 			"Should new version automatically be tagged",
 			[]string{"yes", "no"},
 		)
@@ -47,7 +48,7 @@ var initCmd = &cobra.Command{
 			config.TagVersions = true
 		}
 
-		_, changesShouldBePushed, err := internal.PromptSelect(
+		_, changesShouldBePushed, err := cobraUtils.PromptSelect(
 			"Should changes made by semver automatically be pushed",
 			[]string{"yes", "no"},
 		)
@@ -56,13 +57,13 @@ var initCmd = &cobra.Command{
 		if changesShouldBePushed == "yes" {
 			config.PushChanges = true
 
-			author, err := internal.PromptOptionalText("Author of version commits")
+			author, err := cobraUtils.PromptOptionalText("Author of version commits")
 			internal.LogFatalOnErr(err)
 			if author != "" {
 				config.Author = author
 			}
 
-			email, err := internal.PromptOptionalText("Email of version commits")
+			email, err := cobraUtils.PromptOptionalText("Email of version commits")
 			internal.LogFatalOnErr(err)
 			if email != "" {
 				config.Email = email
