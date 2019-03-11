@@ -24,6 +24,9 @@ func (fs *getCmdFlagsType) Init(cmd *cobra.Command) {
 func (fs *getCmdFlagsType) PreRun(cmd *cobra.Command) {
 	bindViperFlag("versionFile", cmd.Flags().Lookup("versionFile"))
 	bindViperFlag("versionFileType", cmd.Flags().Lookup("versionFileType"))
+
+	repoPath, _ := cmd.Flags().GetString("path")
+	LaodViperConfig(repoPath)
 }
 
 func (fs *getCmdFlagsType) RepoPath() string {

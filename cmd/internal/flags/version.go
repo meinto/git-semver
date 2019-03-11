@@ -43,6 +43,9 @@ func (fs *versionCmdFlagsType) PreRun(cmd *cobra.Command) {
 	bindViperFlag("pushChanges", cmd.Flags().Lookup("push"))
 	bindViperFlag("author", cmd.Flags().Lookup("author"))
 	bindViperFlag("email", cmd.Flags().Lookup("email"))
+
+	repoPath, _ := cmd.Flags().GetString("path")
+	LaodViperConfig(repoPath)
 }
 
 func (fs *versionCmdFlagsType) RepoPath() string {
