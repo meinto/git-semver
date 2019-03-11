@@ -1,6 +1,8 @@
 package flags
 
 import (
+	"log"
+
 	"github.com/meinto/git-semver/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -29,6 +31,15 @@ func (fs *rootCmdFlagsType) Init(cmd *cobra.Command) {
 	defaultSSHFilePath, err := util.GetDefaultSSHFilePath()
 	util.LogOnError(err, RootCmdFlags.Verbose())
 	cmd.Flags().StringVar(&RootCmdFlags.sshFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
+
+	viper.SetConfigName("semver.config")
+	viper.SetConfigType("json")
+	repoPath, _ := cmd.Flags().GetString("path")
+	viper.AddConfigPath(repoPath)
+	err = viper.ReadInConfig()
+	if err != nil {
+		log.Println("there is no semver.config file: ", err)
+	}
 }
 
 func (fs *rootCmdFlagsType) PreRun(cmd *cobra.Command) {
