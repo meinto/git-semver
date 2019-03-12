@@ -14,8 +14,6 @@ import (
 
 var versionCmdFlags struct {
 	dryRun bool
-	// author          string
-	// email           string
 }
 
 func init() {

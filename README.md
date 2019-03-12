@@ -12,13 +12,6 @@ Download the corresponding [latest binary](https://github.com/meinto/git-semver/
 
 ```bash
 <name-of-binary> install
-
-# answer the questions
-Select your downloaded semver file:
-  > semver_xxx
-How do you want to use semver?
-  > global
-  > git plugin
 ```
 
 You can use `semver` as a gitplugin by using the following syntax:
@@ -39,9 +32,6 @@ semver version [major|minor|patch] \
   [-t <version-file-type>] \          # default: raw -- you can set the values "json" or "raw"
   [--tag] \                           # default: false -- tag the commit with the new version
   [--push] \                          # default: false -- push all changes made by semver
-  [-a <name-of-author>] \             # default: semver -- (only relevant when --push is set)
-  [-e <email-of-author]               # default: semver@no-reply.git -- (only relevant when --push is set)
-  [-sshFilePath <path-to-ssh-file>]   # default: ~/.ssh/id_rsa
 ```
 
 You can create an individual `semver.config.json` file in the root of your project to override the default values of the flags. Simply run the `semver init` command and follow the instructions.
@@ -68,10 +58,6 @@ With the flag `--tag` or short `-T`, `semver` will create a git tag of the new v
 ### Push version changes
 
 `semver` writes the new version back into the version file. As described, you can also tag the commit using the flag `-T`. To automatically push these changes made by `semver`, use the flag `--push` or short `-P`.
-
-The default author of the commit would be "semver" and the email "semver@no-reply.git". To change this, provide the flags `-a` (auhtor) and `-e` (email).
-
-Right now the pushing feature is only available for repositories managed via ssh. With `--sshFilePath` you can change the default path (`~/.ssh/id_rsa`) to your ssh file.
 
 ## Get Version(s)
 

@@ -20,7 +20,6 @@ var rootCmdFlags struct {
 	createTag       bool
 	versionFile     string
 	versionFileType string
-	sshFilePath     string
 }
 
 func init() {
@@ -30,12 +29,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&rootCmdFlags.createTag, "tag", "T", false, "create a git tag")
 	rootCmd.PersistentFlags().StringVarP(&rootCmdFlags.versionFile, "versionFile", "f", "VERSION", "name of version file")
 	rootCmd.PersistentFlags().StringVarP(&rootCmdFlags.versionFileType, "versionFileType", "t", "raw", "type of version file (json, raw)")
-
-	defaultSSHFilePath, err := file.GetDefaultSSHFilePath()
-	if err != nil {
-		log.Println(err)
-	}
-	rootCmd.PersistentFlags().StringVar(&rootCmdFlags.sshFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
 
 	viper.BindPFlag("gitPath", rootCmd.PersistentFlags().Lookup("gitPath"))
 	viper.BindPFlag("pushChanges", rootCmd.PersistentFlags().Lookup("push"))

@@ -26,8 +26,6 @@ var initCmd = &cobra.Command{
 			VersionFileType string `json:"versionFileType,omitempty"`
 			TagVersions     bool   `json:"tagVersions,omitempty"`
 			PushChanges     bool   `json:"pushChanges,omitempty"`
-			Author          string `json:"author,omitempty"`
-			Email           string `json:"email,omitempty"`
 		}
 
 		versionFile, err := internal.PromptOptionalText("Name of version file")
@@ -58,18 +56,6 @@ var initCmd = &cobra.Command{
 
 		if changesShouldBePushed == "yes" {
 			config.PushChanges = true
-
-			author, err := cobraUtils.PromptOptionalText("Author of version commits")
-			l.LogFatalOnError(err)
-			if author != "" {
-				config.Author = author
-			}
-
-			email, err := cobraUtils.PromptOptionalText("Email of version commits")
-			l.LogFatalOnError(err)
-			if email != "" {
-				config.Email = email
-			}
 		}
 
 		jsonContent, _ := json.MarshalIndent(config, "", "  ")
