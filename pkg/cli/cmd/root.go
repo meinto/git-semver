@@ -49,41 +49,47 @@ var rootCmd = &cobra.Command{
 	Short: "standalone tool to version your gitlab repo with semver",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// if flags.RootCmdFlags.CreateTag() {
-		// 	gitRepoPath, err := filepath.Abs(flags.RootCmdFlags.RepoPath())
-		// 	internal.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
-
-		// 	pathToVersionFile := internal.VersionFilePath(gitRepoPath, flags.RootCmdFlags.VersionFile())
-
-		// 	_, err = os.Stat(pathToVersionFile)
-		// 	internal.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
-
-		// 	versionFile, err := os.Open(pathToVersionFile)
-		// 	internal.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", flags.RootCmdFlags.VersionFile())))
-		// 	defer versionFile.Close()
-
-		// 	byteValue, err := ioutil.ReadAll(versionFile)
-		// 	internal.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
-		// 	currentVersion := internal.GetVersion(flags.RootCmdFlags.VersionFileFormat(), byteValue)
-
-		// 	util.MakeGitTag(gitRepoPath, currentVersion)
-		// }
-
-		// if flags.RootCmdFlags.Push() {
-		// 	if err := util.Push(flags.RootCmdFlags.RepoPath(), flags.RootCmdFlags.SSHFilePath()); err != nil {
-		// 		log.Fatalf("cannot push tag: %s", err.Error())
-		// 	}
-		// }
-
 		g := git.NewGitService(viper.GetString("gitPath"))
-		repoPath, _ := g.GitRepoPath()
-
-		box := packr.NewBox(repoPath + "/buildAssets")
-		version, err := box.FindString("VERSION")
+		repoPath, err := g.GitRepoPath()
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Version of git-semver: %s\n", version)
+
+		versionFilepath := repoPath + "/" + viper.GetString("versionFile")
+		fs := file.NewVersionFileService(versionFilepath)
+
+		if rootCmdFlags.push {
+			g.AddVersionChanges(versionFilepath)
+			currentVersion, err := fs.ReadVersionFromFile(viper.GetString("versionFileType"))
+			if err != nil {
+				log.Fatal(err)
+			}
+			g.CommitVersionChanges(currentVersion)
+		}
+
+		if rootCmdFlags.createTag {
+			fs := file.NewVersionFileService(repoPath + "/" + viper.GetString("versionFile"))
+			currentVersion, err := fs.ReadVersionFromFile(viper.GetString("versionFileType"))
+			if err != nil {
+				log.Fatal(err)
+			}
+			if err = g.CreateTag(currentVersion); err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		if rootCmdFlags.push {
+			g.Push()
+		}
+
+		if !rootCmdFlags.createTag && !rootCmdFlags.push {
+			box := packr.NewBox(repoPath + "/buildAssets")
+			version, err := box.FindString("VERSION")
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("Version of git-semver: %s\n", version)
+		}
 	},
 }
 

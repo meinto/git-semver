@@ -9,11 +9,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+type VersionFileType string
+
+const (
+	JSON VersionFileType = "json"
+	RAW  VersionFileType = "raw"
+)
+
 type VersionFileService interface {
 	WriteVersionFile(version string) error
 	WriteVersionJSONFile(version string) error
-	ReadVersionFromFile() (string, error)
-	ReadVersionFromJSONFile() (string, error)
+	ReadVersionFromFile(filetype string) (string, error)
+	readVersionFromRAWFile() (string, error)
+	readVersionFromJSONFile() (string, error)
 	readJSONFile() (map[string]interface{}, error)
 }
 
@@ -41,7 +49,17 @@ func (s *versionFileService) WriteVersionJSONFile(version string) error {
 	return errors.Wrap(err, fmt.Sprintf("error writing %s", s.filepath))
 }
 
-func (s *versionFileService) ReadVersionFromFile() (string, error) {
+func (s *versionFileService) ReadVersionFromFile(filetype string) (string, error) {
+	switch VersionFileType(filetype) {
+	case JSON:
+		return s.readVersionFromRAWFile()
+	case RAW:
+		return s.readVersionFromJSONFile()
+	}
+	return "", errors.New("unknown version file type")
+}
+
+func (s *versionFileService) readVersionFromRAWFile() (string, error) {
 	versionFile, err := os.Open(s.filepath)
 	if err != nil {
 		return "", errors.Wrap(err, fmt.Sprintf("cannot read %s", s.filepath))
@@ -51,7 +69,7 @@ func (s *versionFileService) ReadVersionFromFile() (string, error) {
 	return string(byteValue), errors.Wrap(err, "cannot read json")
 }
 
-func (s *versionFileService) ReadVersionFromJSONFile() (string, error) {
+func (s *versionFileService) readVersionFromJSONFile() (string, error) {
 	jsonContent, err := s.readJSONFile()
 	if err != nil {
 		return "", err
