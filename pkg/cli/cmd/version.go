@@ -62,8 +62,10 @@ var versionCmd = &cobra.Command{
 		fs.WriteVersionFile(viper.GetString("versionFileType"), nextVersion)
 
 		if viper.GetBool("pushChanges") {
-			gs.AddVersionChanges(versionFilepath)
-			gs.CommitVersionChanges(nextVersion)
+			err = gs.AddVersionChanges(versionFilepath)
+			l.LogFatalOnError(err)
+			err = gs.CommitVersionChanges(nextVersion)
+			l.LogFatalOnError(err)
 		}
 
 		var createGitTagError error
