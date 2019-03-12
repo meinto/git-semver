@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/meinto/cobra-utils"
-	"github.com/meinto/git-semver/cmd/internal"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -19,31 +19,31 @@ var initCmd = &cobra.Command{
 	Short: "init semver config",
 	Run: func(cmd *cobra.Command, args []string) {
 
+		l := internal.NewLogger(rootCmdFlags.verbose)
+
 		var config struct {
 			VersionFile     string `json:"versionFile,omitempty"`
 			VersionFileType string `json:"versionFileType,omitempty"`
 			TagVersions     bool   `json:"tagVersions,omitempty"`
 			PushChanges     bool   `json:"pushChanges,omitempty"`
-			Author          string `json:"author,omitempty"`
-			Email           string `json:"email,omitempty"`
 		}
 
 		versionFile, err := internal.PromptOptionalText("Name of version file")
-		internal.LogFatalOnErr(err)
+		l.LogFatalOnError(err)
 		config.VersionFile = versionFile
 
 		_, versionFileType, err := cobraUtils.PromptSelect(
 			"File type of version file",
 			[]string{"json", "raw"},
 		)
-		internal.LogFatalOnErr(err)
+		l.LogFatalOnError(err)
 		config.VersionFileType = versionFileType
 
 		_, shouldBeTagged, err := cobraUtils.PromptSelect(
 			"Should new version automatically be tagged",
 			[]string{"yes", "no"},
 		)
-		internal.LogFatalOnErr(err)
+		l.LogFatalOnError(err)
 		if shouldBeTagged == "yes" {
 			config.TagVersions = true
 		}
@@ -52,26 +52,14 @@ var initCmd = &cobra.Command{
 			"Should changes made by semver automatically be pushed",
 			[]string{"yes", "no"},
 		)
-		internal.LogFatalOnErr(err)
+		l.LogFatalOnError(err)
 
 		if changesShouldBePushed == "yes" {
 			config.PushChanges = true
-
-			author, err := cobraUtils.PromptOptionalText("Author of version commits")
-			internal.LogFatalOnErr(err)
-			if author != "" {
-				config.Author = author
-			}
-
-			email, err := cobraUtils.PromptOptionalText("Email of version commits")
-			internal.LogFatalOnErr(err)
-			if email != "" {
-				config.Email = email
-			}
 		}
 
 		jsonContent, _ := json.MarshalIndent(config, "", "  ")
 		err = ioutil.WriteFile("semver.config.json", jsonContent, 0644)
-		internal.LogFatalOnErr(errors.Wrap(err, "error writing semver.config.json"))
+		l.LogFatalOnError((errors.Wrap(err, "error writing semver.config.json")))
 	},
 }

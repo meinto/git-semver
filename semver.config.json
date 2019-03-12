@@ -1,8 +1,7 @@
 {
+  "gitPath": "/usr/local/bin/git",
   "versionFile": "VERSION",
   "versionFileType": "raw",
   "tagVersions": true,
-  "pushChanges": true,
-  "author": "Tobias Meinhardt",
-  "email": "tobias.meinhardt89@gmail.com"
+  "pushChanges": true
 }

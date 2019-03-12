@@ -2,3 +2,5 @@ semver
 build
 buildAssets
 glow.private.json
+
+debug
