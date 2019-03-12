@@ -7,6 +7,7 @@ import (
 	semver "github.com/meinto/git-semver"
 	"github.com/meinto/git-semver/file"
 	"github.com/meinto/git-semver/git"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -28,30 +29,24 @@ var versionCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
+		l := internal.NewLogger(rootCmdFlags.verbose)
+
 		gs := git.NewGitService(viper.GetString("gitPath"))
 		repoPath, err := gs.GitRepoPath()
-		if err != nil {
-			log.Fatal(err)
-		}
+		l.LogFatalOnError(err)
 
 		versionFilepath := repoPath + "/" + viper.GetString("versionFile")
 		fs := file.NewVersionFileService(versionFilepath)
 
 		currentVersion, err := fs.ReadVersionFromFile(viper.GetString("versionFileType"))
-		if err != nil {
-			log.Fatal(err)
-		}
+		l.LogFatalOnError(err)
 
 		vs, err := semver.NewVersion(currentVersion)
-		if err != nil {
-			log.Fatal(err)
-		}
+		l.LogFatalOnError(err)
 
 		nextVersionType := args[0]
 		nextVersion, err := vs.SetNext(nextVersionType)
-		if err != nil {
-			log.Fatal(err)
-		}
+		l.LogFatalOnError(err)
 
 		log.Println("new version will be: ", nextVersion)
 

@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/meinto/git-semver"
 	"github.com/meinto/git-semver/file"
 	"github.com/meinto/git-semver/git"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
 
 	"github.com/spf13/cobra"
 
@@ -27,37 +27,30 @@ var getCmd = &cobra.Command{
 	Short: "get version number",
 	Run: func(cmd *cobra.Command, args []string) {
 
+		l := internal.NewLogger(rootCmdFlags.verbose)
+
 		gs := git.NewGitService(viper.GetString("gitPath"))
 		repoPath, err := gs.GitRepoPath()
-		if err != nil {
-			log.Fatal(err)
-		}
+		l.LogFatalOnError(err)
 
 		versionFilepath := repoPath + "/" + viper.GetString("versionFile")
 		fs := file.NewVersionFileService(versionFilepath)
 
 		currentVersion, err := fs.ReadVersionFromFile(viper.GetString("versionFileType"))
-		if err != nil {
-			log.Fatal(err)
-		}
+		l.LogFatalOnError(err)
 
 		vs, err := semver.NewVersion(currentVersion)
-		if err != nil {
-			log.Fatal(err)
-		}
+		l.LogFatalOnError(err)
+
 		if len(args) > 0 {
 			nextVersionType := args[0]
 			nextVersion, err := vs.Get(nextVersionType)
-			if err != nil {
-				log.Fatal(err)
-			}
+			l.LogFatalOnError(err)
 
 			printNextVersion(nextVersionType, nextVersion, getCmdFlags.printRaw)
 		} else {
 			currentVersion, err := vs.Get("")
-			if err != nil {
-				log.Fatal(err)
-			}
+			l.LogFatalOnError(err)
 
 			printCurrentVersion(currentVersion, getCmdFlags.printRaw)
 		}

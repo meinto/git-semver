@@ -1,22 +1,35 @@
 package internal
 
-import (
-	"log"
+import "log"
 
-	"github.com/meinto/git-semver/pkg/cli/cmd/internal/flags"
-	"github.com/meinto/git-semver/util"
-)
-
-func LogOnError(err error) {
-	util.LogFatalOnErr(err, flags.RootCmdFlags.Verbose())
+type Logger interface {
+	LogFatalOnError(err error)
+	LogFatalIfNotOk(ok bool, message string)
 }
 
-func LogFatalOnErr(err error) {
-	util.LogFatalOnErr(err, flags.RootCmdFlags.Verbose())
+type logger struct {
+	verbose bool
 }
 
-func LogFatalIfNotOk(ok bool, message string) {
+func NewLogger(verbose bool) Logger {
+	return &logger{verbose}
+}
+
+func (l *logger) LogFatalOnError(err error) {
+	if err != nil {
+		log.Fatalf(pattern(l.verbose), err)
+	}
+}
+
+func (l *logger) LogFatalIfNotOk(ok bool, message string) {
 	if !ok {
 		log.Fatal(message)
 	}
+}
+
+func pattern(verbose bool) string {
+	if verbose {
+		return "%+v\n"
+	}
+	return "%v\n"
 }
