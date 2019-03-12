@@ -1,0 +1,7 @@
+{
+  "author": "tobias",
+  "gitProviderDomain": "https://api.github.com",
+  "gitProvider": "github",
+  "projectNamespace": "meinto",
+  "projectName": "git-semver"
+}
