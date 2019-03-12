@@ -68,7 +68,7 @@ func (s service) AddVersionChanges(filename string) error {
 }
 
 func (s service) CommitVersionChanges(version string) error {
-	cmd := exec.Command(s.gitPath, "commit", "-m", fmt.Sprintf("add changes for version %s"))
+	cmd := exec.Command(s.gitPath, "commit", "-m", fmt.Sprintf("add changes for version %s", version))
 	err := cmd.Run()
 	return errors.Wrap(err, "error committing added changes")
 }
