@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/meinto/cobra-utils"
-	"github.com/meinto/git-semver/cmd/internal"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )

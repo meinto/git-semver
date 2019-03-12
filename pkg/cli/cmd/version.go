@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"github.com/meinto/git-semver/cmd/internal/flags"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal/flags"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath" 
    
-	"github.com/meinto/git-semver/cmd/internal"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
 	"github.com/meinto/git-semver/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra" 

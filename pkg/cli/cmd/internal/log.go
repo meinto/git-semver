@@ -3,7 +3,7 @@ package internal
 import (
 	"log"
 
-	"github.com/meinto/git-semver/cmd/internal/flags"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal/flags"
 	"github.com/meinto/git-semver/util"
 )
 

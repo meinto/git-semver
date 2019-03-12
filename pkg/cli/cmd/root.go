@@ -9,8 +9,8 @@ import (
 	"github.com/meinto/git-semver/util" 
 
 	"github.com/gobuffalo/packr"
-	"github.com/meinto/git-semver/cmd/internal/flags"
-	"github.com/meinto/git-semver/cmd/internal"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal/flags"
+	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
 	"github.com/spf13/cobra" 
 	"github.com/pkg/errors" 
 )
