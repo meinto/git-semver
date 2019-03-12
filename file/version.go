@@ -52,9 +52,9 @@ func (s *versionFileService) WriteVersionJSONFile(version string) error {
 func (s *versionFileService) ReadVersionFromFile(filetype string) (string, error) {
 	switch VersionFileType(filetype) {
 	case JSON:
-		return s.readVersionFromRAWFile()
-	case RAW:
 		return s.readVersionFromJSONFile()
+	case RAW:
+		return s.readVersionFromRAWFile()
 	}
 	return "", errors.New("unknown version file type")
 }
@@ -66,7 +66,7 @@ func (s *versionFileService) readVersionFromRAWFile() (string, error) {
 	}
 	defer versionFile.Close()
 	byteValue, err := ioutil.ReadAll(versionFile)
-	return string(byteValue), errors.Wrap(err, "cannot read json")
+	return string(byteValue), errors.Wrap(err, "cannot raw json")
 }
 
 func (s *versionFileService) readVersionFromJSONFile() (string, error) {

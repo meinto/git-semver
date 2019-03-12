@@ -10,8 +10,6 @@ import (
 
 	"github.com/gobuffalo/packr"
 	"github.com/spf13/cobra"
-
-	// "github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 

@@ -2,57 +2,79 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
+	"log"
 
-	"github.com/meinto/git-semver/pkg/cli/cmd/internal/flags"
+	"github.com/meinto/git-semver"
+	"github.com/meinto/git-semver/file"
+	"github.com/meinto/git-semver/git"
 
-	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
-	"github.com/meinto/git-semver/util"
-	"github.com/pkg/errors" 
 	"github.com/spf13/cobra"
+
+	"github.com/spf13/viper"
 )
 
-func init() {
-	rootCmd.AddCommand(getCmd) 
-	flags.GetCmdFlags.Init(getCmd)
+var getCmdFlags struct {
+	printRaw bool
 }
 
-var getCmd = &cobra.Command{     
+func init() {
+	rootCmd.AddCommand(getCmd)
+	getCmd.Flags().BoolVarP(&getCmdFlags.printRaw, "raw", "r", false, "print only the plain version number")
+}
+
+var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get version number",
-	PreRun: func(cmd *cobra.Command, args []string) {
-		flags.GetCmdFlags.PreRun(cmd)
-	},
 	Run: func(cmd *cobra.Command, args []string) {
-		gitRepoPath, err := filepath.Abs(flags.GetCmdFlags.RepoPath()) 
-		internal.LogFatalOnErr(errors.Wrap(err, "cannot resolve repo path"))
 
-		pathToVersionFile := internal.VersionFilePath(gitRepoPath, flags.GetCmdFlags.VersionFile())
-
-		_, err = os.Stat(pathToVersionFile) 
-		internal.LogFatalOnErr(errors.Wrap(err, "version file doesn't exist"))
-
-		versionFile, err := os.Open(pathToVersionFile)
-		internal.LogFatalOnErr(errors.Wrap(err, fmt.Sprintf("cannot read %s", flags.GetCmdFlags.VersionFile())))
-		defer versionFile.Close()
-
-		byteValue, err := ioutil.ReadAll(versionFile)
-		internal.LogFatalOnErr(errors.Wrap(err, "cannot read file"))
-		currentVersion := internal.GetVersion(flags.GetCmdFlags.VersionFileFormat(), byteValue)
-
-		if len(args) > 0 {
-			nextVersionType := args[0]
-			internal.ValidateNextVersionType(nextVersionType)
-
-			nextVersion, err := util.NextVersion(currentVersion, nextVersionType)
-			internal.LogFatalOnErr(err)
-
-			internal.PrintNextVersion(nextVersionType, nextVersion, flags.GetCmdFlags.PrintRaw())
-		} else {
-			internal.PrintCurrentVersion(currentVersion, flags.GetCmdFlags.PrintRaw())
+		gs := git.NewGitService(viper.GetString("gitPath"))
+		repoPath, err := gs.GitRepoPath()
+		if err != nil {
+			log.Fatal(err)
 		}
 
+		versionFilepath := repoPath + "/" + viper.GetString("versionFile")
+		fs := file.NewVersionFileService(versionFilepath)
+
+		currentVersion, err := fs.ReadVersionFromFile(viper.GetString("versionFileType"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		vs, err := semver.NewVersion(currentVersion)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if len(args) > 0 {
+			nextVersionType := args[0]
+			nextVersion, err := vs.Get(nextVersionType)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			printNextVersion(nextVersionType, nextVersion, getCmdFlags.printRaw)
+		} else {
+			currentVersion, err := vs.Get("")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			printCurrentVersion(currentVersion, getCmdFlags.printRaw)
+		}
 	},
+}
+
+func printNextVersion(nextVersionType, nextVersion string, raw bool) {
+	printVersion(nextVersion, fmt.Sprintf("Next %s version: ", nextVersionType), raw)
+}
+
+func printCurrentVersion(currentVersion string, raw bool) {
+	printVersion(currentVersion, "Current version: ", raw)
+}
+
+func printVersion(nextVersion, message string, raw bool) {
+	if !raw {
+		fmt.Print(message)
+	}
+	fmt.Println(nextVersion)
 }
