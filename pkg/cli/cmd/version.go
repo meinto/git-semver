@@ -62,7 +62,7 @@ var versionCmd = &cobra.Command{
 		fs.WriteVersionFile(viper.GetString("versionFileType"), nextVersion)
 
 		if viper.GetBool("pushChanges") {
-			err = gs.AddVersionChanges(versionFilepath)
+			err = gs.AddVersionChanges(viper.GetString("versionFile"))
 			l.LogFatalOnError(err)
 			err = gs.CommitVersionChanges(nextVersion)
 			l.LogFatalOnError(err)

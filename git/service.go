@@ -58,6 +58,9 @@ func (s service) Push() error {
 
 func (s service) AddVersionChanges(filename string) error {
 	repoPath, err := s.GitRepoPath()
+	if err != nil {
+		return err
+	}
 	filePath := repoPath + "/" + filename
 	cmd := exec.Command(s.gitPath, "add", filePath)
 	err = cmd.Run()

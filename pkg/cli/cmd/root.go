@@ -52,7 +52,7 @@ var rootCmd = &cobra.Command{
 		fs := file.NewVersionFileService(versionFilepath)
 
 		if rootCmdFlags.push {
-			g.AddVersionChanges(versionFilepath)
+			g.AddVersionChanges(viper.GetString("versionFile"))
 			currentVersion, err := fs.ReadVersionFromFile(viper.GetString("versionFileType"))
 			if err != nil {
 				log.Fatal(err)
