@@ -17,8 +17,9 @@ const (
 )
 
 type VersionFileService interface {
-	WriteVersionFile(version string) error
-	WriteVersionJSONFile(version string) error
+	WriteVersionFile(filetype, version string) error
+	writeVersionRAWFile(version string) error
+	writeVersionJSONFile(version string) error
 	ReadVersionFromFile(filetype string) (string, error)
 	readVersionFromRAWFile() (string, error)
 	readVersionFromJSONFile() (string, error)
@@ -33,12 +34,22 @@ func NewVersionFileService(filepath string) VersionFileService {
 	return &versionFileService{filepath}
 }
 
-func (s *versionFileService) WriteVersionFile(version string) error {
+func (s *versionFileService) WriteVersionFile(filetype, version string) error {
+	switch VersionFileType(filetype) {
+	case JSON:
+		return s.writeVersionJSONFile(version)
+	case RAW:
+		return s.writeVersionRAWFile(version)
+	}
+	return errors.New("unknown version file type")
+}
+
+func (s *versionFileService) writeVersionRAWFile(version string) error {
 	err := ioutil.WriteFile(s.filepath, []byte(version), 0644)
 	return errors.Wrap(err, fmt.Sprintf("error writing %s", s.filepath))
 }
 
-func (s *versionFileService) WriteVersionJSONFile(version string) error {
+func (s *versionFileService) writeVersionJSONFile(version string) error {
 	jsonContent, err := s.readJSONFile()
 	if err != nil {
 		return err

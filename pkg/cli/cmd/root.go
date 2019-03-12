@@ -38,6 +38,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&rootCmdFlags.sshFilePath, "sshFilePath", defaultSSHFilePath, "path to your ssh file")
 
 	viper.BindPFlag("gitPath", rootCmd.PersistentFlags().Lookup("gitPath"))
+	viper.BindPFlag("pushChanges", rootCmd.PersistentFlags().Lookup("push"))
+	viper.BindPFlag("tagVersions", rootCmd.PersistentFlags().Lookup("tag"))
 	viper.BindPFlag("versionFile", rootCmd.PersistentFlags().Lookup("versionFile"))
 	viper.BindPFlag("versionFileType", rootCmd.PersistentFlags().Lookup("versionFileType"))
 }
