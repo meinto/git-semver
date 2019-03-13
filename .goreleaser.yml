@@ -20,6 +20,9 @@ archive:
   replacements:
     386: i386
     amd64: x86_64
+  format_overrides:
+    - goos: windows
+      format: zip
 brew:
   github:
     owner: meinto
