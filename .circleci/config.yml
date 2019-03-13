@@ -11,6 +11,10 @@ jobs:
       - checkout
       - run: go get ./...
       - run: ./.circleci/build.sh
+      - save_cache:
+          key: binaries
+          paths:
+            - ./build
   deploy:
     docker:
       - image: circleci/golang:1.11
@@ -18,7 +22,9 @@ jobs:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/meinto/git-semver
     steps:
-      - checkout
+      - restore_cache:
+          keys:
+            - binaries
       - run: go get -u github.com/tcnksm/ghr
       - run: ghr -t $GITHUB_TOKEN v$(cat VERSION) build
 
@@ -29,7 +35,7 @@ workflows:
       - build:
           filters:  # required since `deploy` has tag filters AND requires `build`
             tags:
-              only: /.*/
+              only: /^v.*$/
       - deploy:
           requires:
             - build
