@@ -8,6 +8,15 @@ What i want is small cli tool that handles the version of my repository, no matt
 
 ## Installation
 
+**brew**
+
+```bash
+brew tap meinto/git-semver https://github.com/meinto/git-semver
+brew install meinto/git-semver/git-semver
+```
+
+**manually**
+
 Download the corresponding [latest binary](https://github.com/meinto/git-semver/releases) and run the `install` command. Right now the `install` command is only valid for mac and linux.
 
 ```bash
