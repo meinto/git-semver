@@ -22,6 +22,7 @@ jobs:
           GO111MODULE: "on"
     working_directory: /go/src/github.com/meinto/git-semver
     steps:
+      - checkout
       - restore_cache:
           keys:
             - binaries
