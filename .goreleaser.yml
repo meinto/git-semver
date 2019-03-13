@@ -36,7 +36,7 @@ checksum:
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
-  sort: asc
+  sort: desc
   filters:
     exclude:
     - '^docs:'
