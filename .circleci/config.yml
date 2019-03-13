@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  build:
+  release:
     docker:
       - image: circleci/golang:1.11
         environment:
@@ -9,37 +9,13 @@ jobs:
     working_directory: /go/src/github.com/meinto/git-semver
     steps:
       - checkout
-      - run: go get ./...
-      - run: ./.circleci/build.sh
-      - save_cache:
-          key: binaries
-          paths:
-            - ./build
-  deploy:
-    docker:
-      - image: circleci/golang:1.11
-        environment:
-          GO111MODULE: "on"
-    working_directory: /go/src/github.com/meinto/git-semver
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - binaries
-      - run: go get -u github.com/tcnksm/ghr
-      - run: ghr -t $GITHUB_TOKEN v$(cat VERSION) build
+      - run: curl -sL https://git.io/goreleaser | bash
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build:
-          filters:  # required since `deploy` has tag filters AND requires `build`
-            tags:
-              only: /^v.*$/
-      - deploy:
-          requires:
-            - build
+      - release:
           filters:
             branches:
               ignore: /.*/

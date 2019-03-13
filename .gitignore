@@ -1,5 +1,6 @@
 semver
 build
+dist
 buildAssets
 glow.private.json
 
