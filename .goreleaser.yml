@@ -18,6 +18,17 @@ archive:
     windows: Windows
     386: i386
     amd64: x86_64
+brew:
+  name: semver
+  github:
+    owner: meinto
+    name: git-semver
+  commit_author:
+    name: Tobias Meinhardt
+    email: tobias.meinhardt89@gmail.com
+  folder: formula
+  dependencies:
+    - git
 checksum:
   name_template: 'checksums.txt'
 snapshot:
