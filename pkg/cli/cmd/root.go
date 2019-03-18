@@ -40,6 +40,18 @@ func init() {
 var rootCmd = &cobra.Command{
 	Use:   "semver",
 	Short: "standalone tool to version your gitlab repo with semver",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		g := git.NewGitService(viper.GetString("gitPath"))
+		repoPath, _ := g.GitRepoPath()
+
+		viper.SetConfigName("semver.config")
+		viper.SetConfigType("json")
+		viper.AddConfigPath(repoPath)
+		err := viper.ReadInConfig()
+		if err != nil {
+			log.Println("there is no semver.config file: ", err)
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		g := git.NewGitService(viper.GetString("gitPath"))
