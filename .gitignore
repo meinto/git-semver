@@ -1,7 +1,10 @@
 semver
+git-semver
 build
 dist
 buildAssets
 glow.private.json
+
+on/
 
 debug
