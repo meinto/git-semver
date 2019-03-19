@@ -88,7 +88,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		if !rootCmdFlags.createTag && !rootCmdFlags.push {
-			box := packr.NewBox(repoPath + "/buildAssets")
+			box := packr.NewBox("../../../buildAssets")
 			version, err := box.FindString("VERSION")
 			if err != nil {
 				log.Fatal(err)
