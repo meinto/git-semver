@@ -1,4 +1,5 @@
 semver
+git-semver
 build
 dist
 buildAssets
