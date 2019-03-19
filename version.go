@@ -35,6 +35,10 @@ func (v *version) Get(vt string) (string, error) {
 
 	numbers := strings.Split(v.current, ".")
 
+	for i, n := range numbers {
+		numbers[i] = strings.TrimSuffix(n, "\n")
+	}
+
 	var err error
 	switch versionType {
 	case MAJOR:

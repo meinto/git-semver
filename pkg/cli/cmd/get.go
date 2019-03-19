@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/meinto/git-semver"
+	semver "github.com/meinto/git-semver"
 	"github.com/meinto/git-semver/file"
 	"github.com/meinto/git-semver/git"
 	"github.com/meinto/git-semver/pkg/cli/cmd/internal"
