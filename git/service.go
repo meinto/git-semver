@@ -30,30 +30,36 @@ func NewGitService(gitPath string) Service {
 
 func (s service) GitRepoPath() (string, error) {
 	cmd := exec.Command(s.gitPath, "rev-parse", "--show-toplevel")
-	var stdout bytes.Buffer
+	var stdout, stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 	err := cmd.Run()
-	return strings.TrimSuffix(stdout.String(), "\n"), err
+	return strings.TrimSuffix(stdout.String(), "\n"), errors.Wrap(err, fmt.Sprintf("pkg(git) GitRepoPath(): %s", stderr.String()))
 }
 
 func (s service) IsRepoClean() (bool, error) {
 	cmd := exec.Command(s.gitPath, "status", "-s")
-	var stdout bytes.Buffer
+	var stdout, stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 	err := cmd.Run()
-	return stdout.String() == "", err
+	return stdout.String() == "", errors.Wrap(err, fmt.Sprintf("pkg(git) IsRepoClean(): %s", stderr.String()))
 }
 
 func (s service) CreateTag(version string) error {
 	cmd := exec.Command(s.gitPath, "tag", "-a", "v"+version, "-m", fmt.Sprintf("create new tag v%s", version))
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	err := cmd.Run()
-	return errors.Wrap(err, "error creating git tag")
+	return errors.Wrap(err, fmt.Sprintf("pkg(git) CreateTag(): %s", stderr.String()))
 }
 
 func (s service) Push() error {
 	cmd := exec.Command(s.gitPath, "push", "--follow-tags")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	err := cmd.Run()
-	return errors.Wrap(err, "error creating git tag")
+	return errors.Wrap(err, fmt.Sprintf("pkg(git) Push(): %s", stderr.String()))
 }
 
 func (s service) AddVersionChanges(filename string) error {
@@ -63,12 +69,16 @@ func (s service) AddVersionChanges(filename string) error {
 	}
 	filePath := repoPath + "/" + filename
 	cmd := exec.Command(s.gitPath, "add", filePath)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	err = cmd.Run()
-	return errors.Wrap(err, "error adding version changes")
+	return errors.Wrap(err, fmt.Sprintf("pkg(git) AddVersionChanges(): %s", stderr.String()))
 }
 
 func (s service) CommitVersionChanges(version string) error {
 	cmd := exec.Command(s.gitPath, "commit", "-m", fmt.Sprintf("add changes for version %s", version))
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	err := cmd.Run()
-	return errors.Wrap(err, "error committing added changes")
+	return errors.Wrap(err, fmt.Sprintf("pkg(git) CommitVersionChanges(): %s", stderr.String()))
 }
