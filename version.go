@@ -35,22 +35,26 @@ func (v *version) Get(vt string) (string, error) {
 
 	numbers := strings.Split(v.current, ".")
 
+	var err error
 	switch versionType {
 	case MAJOR:
-		major, _ := strconv.Atoi(numbers[0])
+		major, e := strconv.Atoi(numbers[0])
+		err = e
 		numbers[0] = strconv.Itoa(major + 1)
 		numbers[1] = "0"
 		numbers[2] = "0"
 	case MINOR:
-		minor, _ := strconv.Atoi(numbers[1])
+		minor, e := strconv.Atoi(numbers[1])
+		err = e
 		numbers[1] = strconv.Itoa(minor + 1)
 		numbers[2] = "0"
 	case PATCH:
-		patch, _ := strconv.Atoi(numbers[2])
+		patch, e := strconv.Atoi(numbers[2])
+		err = e
 		numbers[2] = strconv.Itoa(patch + 1)
 	}
 
-	return strings.Join(numbers, "."), nil
+	return strings.Join(numbers, "."), err
 }
 
 func (v *version) SetNext(vt string) (string, error) {
