@@ -54,14 +54,20 @@ var rootCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 
-		g := git.NewGitService(viper.GetString("gitPath"))
-		repoPath, err := g.GitRepoPath()
-		if err != nil {
-			log.Fatal(err)
-		}
+		var g git.Service
+		var fs file.VersionFileService
+		var repoPath string
+		if rootCmdFlags.push || rootCmdFlags.createTag {
+			g = git.NewGitService(viper.GetString("gitPath"))
+			rp, err := g.GitRepoPath()
+			if err != nil {
+				log.Fatal(err)
+			}
+			repoPath = rp
 
-		versionFilepath := repoPath + "/" + viper.GetString("versionFile")
-		fs := file.NewVersionFileService(versionFilepath)
+			versionFilepath := repoPath + "/" + viper.GetString("versionFile")
+			fs = file.NewVersionFileService(versionFilepath)
+		}
 
 		if rootCmdFlags.push {
 			g.AddVersionChanges(viper.GetString("versionFile"))
@@ -88,7 +94,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		if !rootCmdFlags.createTag && !rootCmdFlags.push {
-			box := packr.NewBox(repoPath + "/buildAssets")
+			box := packr.NewBox("../../../buildAssets")
 			version, err := box.FindString("VERSION")
 			if err != nil {
 				log.Fatal(err)
