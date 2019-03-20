@@ -15,6 +15,7 @@ type Service interface {
 	IsRepoClean() (bool, error)
 	CreateTag(version string) error
 	Push() error
+	PushTag(name string) error
 	AddVersionChanges(filename string) error
 	CommitVersionChanges(version string) error
 }
@@ -60,6 +61,14 @@ func (s service) Push() error {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	return errors.Wrap(err, fmt.Sprintf("pkg(git) Push(): %s", stderr.String()))
+}
+
+func (s service) PushTag(version string) error {
+	cmd := exec.Command(s.gitPath, "push", "origin", "v"+version)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	return errors.Wrap(err, fmt.Sprintf("pkg(git) PushTag(): %s", stderr.String()))
 }
 
 func (s service) AddVersionChanges(filename string) error {
