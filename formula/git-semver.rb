@@ -2,9 +2,9 @@
 class GitSemver < Formula
   desc ""
   homepage ""
-  url "https://github.com/meinto/git-semver/releases/download/v5.2.0/semver_5.2.0_darwin_x86_64.tar.gz"
-  version "5.2.0"
-  sha256 "5ca6dbeacd3b891cfd774fa4242fd2c1a26596c24c91f4d6a864589a19879800"
+  url "https://github.com/meinto/git-semver/releases/download/v5.1.0/semver_5.1.0_darwin_x86_64.tar.gz"
+  version "5.1.0"
+  sha256 "2d4eaf80cf86d0b93414826efc5eccd16e30bd2f7426d7e3f6440363f8477e79"
   
   depends_on "git"
 
