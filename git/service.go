@@ -51,14 +51,11 @@ func (s service) Command(cmd string) (*exec.Cmd, error) {
 
 func (s service) GitRepoPath() (string, error) {
 	if s.pathToRepo == "" {
-		cmd, err := s.Command("git rev-parse --show-toplevel")
-		if err != nil {
-			return "", err
-		}
+		cmd := exec.Command("git rev-parse --show-toplevel")
 		var stdout, stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		cmd.Stdout = &stdout
-		err = cmd.Run()
+		err := cmd.Run()
 		return strings.TrimSuffix(stdout.String(), "\n"), errors.Wrap(err, fmt.Sprintf("pkg(git) GitRepoPath(): %s", stderr.String()))
 	} else {
 		return s.pathToRepo, nil
