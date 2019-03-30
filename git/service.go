@@ -51,7 +51,7 @@ func (s service) Command(cmd string) (*exec.Cmd, error) {
 
 func (s service) GitRepoPath() (string, error) {
 	if s.pathToRepo == "" {
-		cmd := exec.Command("git rev-parse --show-toplevel")
+		cmd := exec.Command(s.shell, "-c", "git rev-parse --show-toplevel")
 		var stdout, stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		cmd.Stdout = &stdout
