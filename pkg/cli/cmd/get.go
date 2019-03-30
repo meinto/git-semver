@@ -29,7 +29,7 @@ var getCmd = &cobra.Command{
 
 		l := internal.NewLogger(rootCmdFlags.verbose)
 
-		gs := git.NewGitService(viper.GetString("gitPath"))
+		gs := git.NewGitService(viper.GetString("shellPath"))
 		repoPath, err := gs.GitRepoPath()
 		l.LogFatalOnError(err)
 

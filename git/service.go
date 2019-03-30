@@ -21,16 +21,16 @@ type Service interface {
 }
 
 type service struct {
-	gitPath string
+	shell string
 	Service
 }
 
-func NewGitService(gitPath string) Service {
-	return service{gitPath: gitPath}
+func NewGitService(pathToShell string) Service {
+	return service{shell: pathToShell}
 }
 
 func (s service) GitRepoPath() (string, error) {
-	cmd := exec.Command(s.gitPath, "rev-parse", "--show-toplevel")
+	cmd := exec.Command(s.shell, "-c", "git rev-parse --show-toplevel")
 	var stdout, stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
@@ -39,7 +39,7 @@ func (s service) GitRepoPath() (string, error) {
 }
 
 func (s service) IsRepoClean() (bool, error) {
-	cmd := exec.Command(s.gitPath, "status", "-s")
+	cmd := exec.Command(s.shell, "-c", "git status -s")
 	var stdout, stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
@@ -48,7 +48,7 @@ func (s service) IsRepoClean() (bool, error) {
 }
 
 func (s service) CreateTag(version string) error {
-	cmd := exec.Command(s.gitPath, "tag", "-a", "v"+version, "-m", fmt.Sprintf("create new tag v%s", version))
+	cmd := exec.Command(s.shell, "-c", fmt.Sprintf("git tag -a v%s -m 'create new tag v%s'", version, version))
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -56,7 +56,7 @@ func (s service) CreateTag(version string) error {
 }
 
 func (s service) Push() error {
-	cmd := exec.Command(s.gitPath, "push", "--follow-tags")
+	cmd := exec.Command(s.shell, "-c", "git push --follow-tags")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -64,7 +64,7 @@ func (s service) Push() error {
 }
 
 func (s service) PushTag(version string) error {
-	cmd := exec.Command(s.gitPath, "push", "origin", "v"+version)
+	cmd := exec.Command(s.shell, "-c", fmt.Sprintf("git push origin v%s", version))
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
@@ -77,7 +77,7 @@ func (s service) AddVersionChanges(filename string) error {
 		return err
 	}
 	filePath := repoPath + "/" + filename
-	cmd := exec.Command(s.gitPath, "add", filePath)
+	cmd := exec.Command(s.shell, "-c", fmt.Sprintf("git add %s", filePath))
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err = cmd.Run()
@@ -85,7 +85,7 @@ func (s service) AddVersionChanges(filename string) error {
 }
 
 func (s service) CommitVersionChanges(version string) error {
-	cmd := exec.Command(s.gitPath, "commit", "-m", fmt.Sprintf("add changes for version %s", version))
+	cmd := exec.Command(s.shell, "-c", fmt.Sprintf("git commit -m 'add changes for version %s'", version))
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()

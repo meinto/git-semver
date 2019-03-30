@@ -14,7 +14,7 @@ import (
 )
 
 var rootCmdFlags struct {
-	gitPath         string
+	shellPath         string
 	verbose         bool
 	push            bool
 	createTag       bool
@@ -23,14 +23,14 @@ var rootCmdFlags struct {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&rootCmdFlags.gitPath, "gitPath", "/usr/local/bin/git", "path to native git installation")
+	rootCmd.PersistentFlags().StringVar(&rootCmdFlags.shellPath, "shellPath", "/bin/bash", "path to shell executor")
 	rootCmd.PersistentFlags().BoolVarP(&rootCmdFlags.verbose, "verbose", "v", false, "more logs")
 	rootCmd.PersistentFlags().BoolVarP(&rootCmdFlags.push, "push", "P", false, "push git tags")
 	rootCmd.PersistentFlags().BoolVarP(&rootCmdFlags.createTag, "tag", "T", false, "create a git tag")
 	rootCmd.PersistentFlags().StringVarP(&rootCmdFlags.versionFile, "versionFile", "f", "VERSION", "name of version file")
 	rootCmd.PersistentFlags().StringVarP(&rootCmdFlags.versionFileType, "versionFileType", "t", "raw", "type of version file (json, raw)")
 
-	viper.BindPFlag("gitPath", rootCmd.PersistentFlags().Lookup("gitPath"))
+	viper.BindPFlag("shellPath", rootCmd.PersistentFlags().Lookup("shellPath"))
 	viper.BindPFlag("pushChanges", rootCmd.PersistentFlags().Lookup("push"))
 	viper.BindPFlag("tagVersions", rootCmd.PersistentFlags().Lookup("tag"))
 	viper.BindPFlag("versionFile", rootCmd.PersistentFlags().Lookup("versionFile"))
@@ -41,7 +41,7 @@ var rootCmd = &cobra.Command{
 	Use:   "semver",
 	Short: "standalone tool to version your gitlab repo with semver",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		g := git.NewGitService(viper.GetString("gitPath"))
+		g := git.NewGitService(viper.GetString("shellPath"))
 		repoPath, _ := g.GitRepoPath()
 
 		viper.SetConfigName("semver.config")
@@ -58,7 +58,7 @@ var rootCmd = &cobra.Command{
 		var fs file.VersionFileService
 		var repoPath string
 		if rootCmdFlags.push || rootCmdFlags.createTag {
-			g = git.NewGitService(viper.GetString("gitPath"))
+			g = git.NewGitService(viper.GetString("shellPath"))
 			rp, err := g.GitRepoPath()
 			if err != nil {
 				log.Fatal(err)

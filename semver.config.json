@@ -1,5 +1,5 @@
 {
-  "gitPath": "/usr/local/bin/git",
+  "shellPath": "/bin/bash",
   "versionFile": "VERSION",
   "versionFileType": "raw",
   "tagVersions": true,
